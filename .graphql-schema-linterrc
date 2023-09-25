@@ -1,0 +1,7 @@
+{
+  "rules": ["enum-values-sorted-alphabetically"],
+  "schemaPaths": ["./infra/graphql/schema.graphql"],
+  "rulesOptions": {
+      "enum-values-sorted-alphabetically": { "sortOrder": "lexicographical" }
+    }
+}

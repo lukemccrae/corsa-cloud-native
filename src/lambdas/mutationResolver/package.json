@@ -1,0 +1,17 @@
+{
+    "name": "mutation-resolver",
+    "version": "1.0.0",
+    "license": "",
+    "description": "Description of your Lambda function",
+    "scripts": {
+      "test": "echo \"No tests available\"",
+      "build": "tsc --outDir ./dist/index.js ./handler.ts"
+    },
+    "dependencies": {
+      "aws-sdk": "^2.1464.0"
+    },
+    "devDependencies": {
+      "typescript": "^5.2.2"
+    }
+  }
+  
