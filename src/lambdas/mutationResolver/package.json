@@ -5,7 +5,7 @@
     "description": "Description of your Lambda function",
     "scripts": {
       "test": "echo \"No tests available\"",
-      "build": "tsc --outDir ./dist/index.js ./handler.ts"
+      "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
     },
     "dependencies": {
       "aws-sdk": "^2.1464.0"

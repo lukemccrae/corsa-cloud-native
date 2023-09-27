@@ -11,7 +11,7 @@ type Mutation {
 
 type Activity {
     id: ID!
-    name: String!
+    name: String
     date: String
     distance: Float
     # this needs to store activity mile info
@@ -19,11 +19,11 @@ type Activity {
 }
 
 type Plan {
-    id: String!
+    id: String
     name: String
     startTime: String # start time of the event
-    goalHours: Int!
-    goalMinutes: Int!
+    goalHours: Int
+    goalMinutes: Int
     mileData: [MileData] # an array of mile information
 }
 
