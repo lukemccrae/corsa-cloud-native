@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "codegen": "graphql-codegen --config codegen.ts",
-    "deploy": "yarn graphql-schema-linter && yarn cdk deploy --profile lukemccrae"
+    "deploy": "yarn graphql-schema-linter && yarn codegen && yarn cdk deploy --profile lukemccrae"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.0",

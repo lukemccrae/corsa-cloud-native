@@ -2,6 +2,9 @@ import * as cdk from 'aws-cdk-lib'
 import * as appsync from 'aws-cdk-lib/aws-appsync'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import * as s3 from 'aws-cdk-lib/aws-s3'
+import * as sqs from 'aws-cdk-lib/aws-sqs'
+import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications'
 // import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { type Construct } from 'constructs'
@@ -18,7 +21,11 @@ export class CorsaBackendStack extends cdk.Stack {
       }
     })
 
-    // const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket')
+    const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket')
+
+    const sqsQueue = new sqs.Queue(this, 'TrackMetadataQueue', {
+      visibilityTimeout: cdk.Duration.seconds(30) // Set the visibility timeout as needed
+    })
 
     // when a new item is added to the bucket trigger an event and write metadata to dynamo
     // metadata will be passed along with the file which will be retrieved from the activity
@@ -56,13 +63,38 @@ export class CorsaBackendStack extends cdk.Stack {
     })
 
     // Attach the policy to your role
+    const queueTriggeredMetadataWriterLambdaRole = new iam.Role(this, 'QueueTriggeredMetadataWriterLambdaRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+    })
+
+    const cloudwatchPolicy = new iam.Policy(this, 'CloudWatchLogsPolicy', {
+      document: cloudWatchLogsPolicy
+    })
+
+    queueTriggeredMetadataWriterLambdaRole.attachInlinePolicy(cloudwatchPolicy)
+
+    const queueTriggeredMetadataWriterLambda = new lambda.Function(this, 'queueTriggeredMetadataWriterLambda', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('src/lambdas/queueMetadataLambda/dist'),
+      role: queueTriggeredMetadataWriterLambdaRole,
+      environment: {
+        DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+      }
+    })
+
+    sqsQueue.grantSendMessages(queueTriggeredMetadataWriterLambda)
+
+    geoJsonBucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3Notifications.LambdaDestination(queueTriggeredMetadataWriterLambda))
+
+    trackMetadataTable.grantReadWriteData(queueTriggeredMetadataWriterLambda)
+
+    // Attach the policy to your role
     const lambdaRole = new iam.Role(this, 'LambdaExecutionRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
     })
 
-    lambdaRole.attachInlinePolicy(new iam.Policy(this, 'CloudWatchLogsPolicy', {
-      document: cloudWatchLogsPolicy
-    }))
+    lambdaRole.attachInlinePolicy(cloudwatchPolicy)
 
     // Create a Lambda function for the Query resolver
     // This query resolver will handle reading records from the metadata table
@@ -92,20 +124,26 @@ export class CorsaBackendStack extends cdk.Stack {
     })
 
     const queryDataSource = api.addLambdaDataSource('QueryDataSource', queryResolverLambda)
+    const mutationDataSource = api.addLambdaDataSource('MutationDataSource', mutationResolverLambda)
 
     queryDataSource.createResolver('getActivityById', {
       typeName: 'Query',
       fieldName: 'getActivityById'
     })
 
-    queryDataSource.createResolver('getAllActivities', {
+    queryDataSource.createResolver('getActivities', {
       typeName: 'Query',
-      fieldName: 'getAllActivities'
+      fieldName: 'getActivities'
     })
 
     queryDataSource.createResolver('getPlanByActivityId', {
       typeName: 'Query',
       fieldName: 'getPlanByActivityId'
+    })
+
+    mutationDataSource.createResolver('createPlanFromActivity', {
+      typeName: 'Mutation',
+      fieldName: 'createPlanFromActivity'
     })
 
     // Grant Lambda permissions to access the DynamoDB table

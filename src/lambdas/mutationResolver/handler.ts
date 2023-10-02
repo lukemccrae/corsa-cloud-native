@@ -1,18 +1,19 @@
-export const handler = async (event: any, context: any) => {
-  // Your code here
+import { upsertActivityById, updatePlanById, createPlanFromActivity } from './services/upsertRecords.service'
+
+export const handler = async (event: any, context: any): Promise<any> => {
   try {
     console.log(event, '< event')
-
-    // Return a response
-    return {
-      statusCode: 200,
-      body: 'JSON.stringify(result'
+    if (event.info.parentTypeName === 'Mutation') {
+      switch (event.info.fieldName) {
+        case 'createPlan':
+          return createPlanFromActivity()
+        case 'upsertActivity':
+          return upsertActivityById()
+        case 'updatePlan':
+          return updatePlanById()
+      }
     }
-  } catch (error) {
-    // Handle errors and return an error response
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'An error occurred' })
-    }
+  } catch (e) {
+    console.log(e)
   }
 }
