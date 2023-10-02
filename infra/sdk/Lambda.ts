@@ -1,3 +1,5 @@
+// TODO: abstract Lambda into this construct
+
 // import { Construct } from 'constructs'
 // import * as lambda from 'aws-cdk-lib/aws-lambda'
 
