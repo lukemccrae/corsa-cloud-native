@@ -24,6 +24,11 @@ export type Activity = {
   start_date?: Maybe<Scalars['String']['output']>;
 };
 
+export type CreatedPlan = {
+  __typename?: 'CreatedPlan';
+  success: Scalars['Boolean']['output'];
+};
+
 export type MileData = {
   __typename?: 'MileData';
   elevationGain?: Maybe<Scalars['Int']['output']>;
@@ -35,7 +40,7 @@ export type MileData = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createPlanFromActivity: Scalars['Boolean']['output'];
+  createPlanFromActivity: CreatedPlan;
   updateActivityById: Activity;
   updatePlan: Plan;
 };
@@ -43,6 +48,7 @@ export type Mutation = {
 
 export type MutationCreatePlanFromActivityArgs = {
   activityId: Scalars['ID']['input'];
+  token: Scalars['String']['input'];
 };
 
 
@@ -173,6 +179,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Activity: ResolverTypeWrapper<Activity>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -188,6 +195,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Activity: Activity;
   Boolean: Scalars['Boolean']['output'];
+  CreatedPlan: CreatedPlan;
   Float: Scalars['Float']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -207,6 +215,11 @@ export type ActivityResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CreatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatedPlan'] = ResolversParentTypes['CreatedPlan']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
   elevationGain?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   elevationLoss?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -217,7 +230,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createPlanFromActivity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId'>>;
+  createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'token'>>;
   updateActivityById?: Resolver<ResolversTypes['Activity'], ParentType, ContextType, RequireFields<MutationUpdateActivityByIdArgs, 'id'>>;
   updatePlan?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<MutationUpdatePlanArgs, 'planInput'>>;
 };
@@ -240,6 +253,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type Resolvers<ContextType = any> = {
   Activity?: ActivityResolvers<ContextType>;
+  CreatedPlan?: CreatedPlanResolvers<ContextType>;
   MileData?: MileDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;

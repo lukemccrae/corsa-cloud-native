@@ -1,4 +1,4 @@
-interface StravaHttpProps {
+export interface StravaHttpProps {
   token: string
   url: string
 
@@ -6,11 +6,12 @@ interface StravaHttpProps {
 
 export const stravaGetHttpClient = async (props: StravaHttpProps): Promise<any> => {
   try {
+    console.log(props, '<< props')
     const response = await fetch(props.url, {
       method: 'GET',
       headers: {
         // TODO: remove auth through graph
-        Authorization: props.token
+        Authorization: `Bearer ${props.token}`
       }
     })
 

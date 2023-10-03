@@ -2,11 +2,11 @@ import { upsertActivityById, updatePlanById, createPlanFromActivity } from './se
 
 export const handler = async (event: any, context: any): Promise<any> => {
   try {
-    console.log(event, '< event')
     if (event.info.parentTypeName === 'Mutation') {
       switch (event.info.fieldName) {
-        case 'createPlan':
-          return createPlanFromActivity()
+        case 'createPlanFromActivity':
+          console.log(event, '< event')
+          return await createPlanFromActivity(event.arguments)
         case 'upsertActivity':
           return upsertActivityById()
         case 'updatePlan':

@@ -101,7 +101,7 @@ export class CorsaBackendStack extends cdk.Stack {
     const queryResolverLambda = new lambda.Function(this, 'QueryResolverLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/lambdas/queryResolver/dist'),
+      code: lambda.Code.fromAsset('src/lambdas/queryResolverLambda/dist'),
       role: lambdaRole,
       environment: {
         DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
@@ -115,8 +115,8 @@ export class CorsaBackendStack extends cdk.Stack {
     // This mutation resolver will handle updating records on the metadata table
     const mutationResolverLambda = new lambda.Function(this, 'MutationResolverLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'handler',
-      code: lambda.Code.fromAsset('src/lambdas/mutationResolver/dist'),
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('src/lambdas/mutationResolverLambda/dist'),
       role: lambdaRole,
       environment: {
         DYNAMODB_TABLE_NAME: trackMetadataTable.tableName

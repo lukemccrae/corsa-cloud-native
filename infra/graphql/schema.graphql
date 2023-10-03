@@ -7,7 +7,7 @@ type Query {
 type Mutation {
     updateActivityById(id: ID!): Activity!
     updatePlan(planInput: PlanInput!): Plan!
-    createPlanFromActivity(activityId: ID!): Boolean!
+    createPlanFromActivity(activityId: ID!, token: String!): CreatedPlan!
 }
 
 type Activity {
@@ -36,6 +36,10 @@ type MileData {
     # fields that can be calculated instead of stored should be calculated on the backend
     # like how the frontend team at nutrien were asking for things, get in the habit of making devs lives easier
     elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
+}
+
+type CreatedPlan {
+    success: Boolean!
 }
 
 input PlanInput {
