@@ -8,6 +8,7 @@ import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications'
 // import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { type Construct } from 'constructs'
+import { Duration } from 'aws-cdk-lib'
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor (scope: Construct, id: string, props?: cdk.StackProps) {
@@ -90,11 +91,24 @@ export class CorsaBackendStack extends cdk.Stack {
     trackMetadataTable.grantReadWriteData(queueTriggeredMetadataWriterLambda)
 
     // Attach the policy to your role
-    const lambdaRole = new iam.Role(this, 'LambdaExecutionRole', {
+    const queryLambdaRole = new iam.Role(this, 'QueryLambdaExecutionRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
     })
 
-    lambdaRole.attachInlinePolicy(cloudwatchPolicy)
+    // Attach the policy to your role
+    const mutationLambdaRole = new iam.Role(this, 'MutationLambdaExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+    })
+
+    queryLambdaRole.attachInlinePolicy(cloudwatchPolicy)
+    mutationLambdaRole.attachInlinePolicy(cloudwatchPolicy)
+
+    const s3WritePolicy = new iam.PolicyStatement({
+      actions: ['s3:PutObject'],
+      resources: [geoJsonBucket.bucketArn + '/*']
+    })
+
+    mutationLambdaRole.addToPolicy(s3WritePolicy)
 
     // Create a Lambda function for the Query resolver
     // This query resolver will handle reading records from the metadata table
@@ -102,7 +116,7 @@ export class CorsaBackendStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/lambdas/queryResolverLambda/dist'),
-      role: lambdaRole,
+      role: queryLambdaRole,
       environment: {
         DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
       }
@@ -117,11 +131,15 @@ export class CorsaBackendStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/lambdas/mutationResolverLambda/dist'),
-      role: lambdaRole,
+      role: mutationLambdaRole,
+      timeout: Duration.seconds(15),
       environment: {
-        DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+        DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
+        GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
       }
     })
+
+    geoJsonBucket.grantReadWrite(mutationResolverLambda)
 
     const queryDataSource = api.addLambdaDataSource('QueryDataSource', queryResolverLambda)
     const mutationDataSource = api.addLambdaDataSource('MutationDataSource', mutationResolverLambda)
