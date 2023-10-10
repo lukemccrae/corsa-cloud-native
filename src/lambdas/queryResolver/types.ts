@@ -18,9 +18,9 @@ export type Scalars = {
 
 export type Activity = {
   __typename?: 'Activity';
-  distance?: Maybe<Scalars['Float']['output']>;
+  distance: Scalars['Float']['output'];
   id: Scalars['ID']['output'];
-  name?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
   start_date?: Maybe<Scalars['String']['output']>;
 };
 
@@ -208,9 +208,9 @@ export type ResolversParentTypes = {
 };
 
 export type ActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
-  distance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  distance?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

@@ -1,20 +1,31 @@
-import { getActivityById, getActivities } from './services/retrieveActivity.service'
-import { getPlanByActivityId } from './services/retrievePlan.service'
+// import { DynamoDBClient, ListBackupsCommand } from '@aws-sdk/client-dynamodb'
 
-export const handler = async (event: any, context: any): Promise<any> => {
+export const handler = async (event: any): Promise<any> => {
   try {
-    console.log(event, '< event')
-    if (event.info.parentTypeName === 'Query') {
-      switch (event.info.fieldName) {
-        case 'getActivityById':
-          return getActivityById()
-        case 'getActivities':
-          return await getActivities(event.arguments)
-        case 'getPlanByActivityId':
-          return getPlanByActivityId()
-      }
-    }
+    const { Bucket, Key } = JSON.parse(event.Records[0].body)
+    await writeMetadataToDynamo(Bucket, Key)
   } catch (e) {
     console.log(e)
   }
+}
+
+export const writeMetadataToDynamo = async (Bucket: string, Key: string): Promise<void> => {
+  console.log(Bucket, Key, '<< log')
+  // const client = new DynamoDBClient({ region: 'us-east-1' })
+  // // Bucket, Key
+  // // Dynamo things
+
+  // const params = {
+  //   /** input parameters */
+  // }
+  // const command = new ListBackupsCommand(params)
+
+  // try {
+  //   const data = await client.send(command)
+  //   // process data.
+  // } catch (error) {
+  //   // error handling.
+  // } finally {
+  //   // finally.
+  // }
 }

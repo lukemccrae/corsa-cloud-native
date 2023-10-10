@@ -12,9 +12,9 @@ type Mutation {
 
 type Activity {
     id: ID!
-    name: String
+    name: String!
     start_date: String
-    distance: Float
+    distance: Float!
     # this needs to store activity mile info
     # it might be available from strava
 }
