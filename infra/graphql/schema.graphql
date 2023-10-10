@@ -1,52 +1,60 @@
 type Query {
-    getActivityById(id: ID!): Activity
-    getActivities(userId: String!, limit: Int!, offset: Int!, dateFrom: Int!, dateTo: Int!, token: String!): [Activity]!
-    getPlanByActivityId(id: String!): Plan
+  getActivityById(id: ID!): Activity
+  getActivities(
+    userId: String!
+    limit: Int!
+    offset: Int!
+    dateFrom: Int!
+    dateTo: Int!
+    token: String!
+  ): [Activity]!
+  getPlanByActivityId(id: String!): Plan
 }
 
 type Mutation {
-    updateActivityById(id: ID!): Activity!
-    updatePlan(planInput: PlanInput!): Plan!
-    createPlanFromActivity(activityId: ID!, token: String!): CreatedPlan!
+  updateActivityById(id: ID!): Activity!
+  updatePlan(planInput: PlanInput!): Plan!
+  createPlanFromActivity(
+    activityId: ID!
+    token: String!
+    userId: ID!
+  ): CreatedPlan!
 }
 
 type Activity {
-    id: ID!
-    name: String!
-    start_date: String
-    distance: Float!
-    # this needs to store activity mile info
-    # it might be available from strava
+  id: ID!
+  name: String!
+  start_date: String
+  distance: Float!
+  # this needs to store activity mile info
+  # it might be available from strava
 }
 
 type Plan {
-    id: String
-    name: String
-    startTime: String # start time of the event
-    goalHours: Int
-    goalMinutes: Int
-    mileData: [MileData] # an array of mile information
+  id: String
+  name: String
+  startTime: String # start time of the event
+  mileData: [MileData] # an array of mile information
 }
 
 type MileData {
-    elevationGain: Int
-    elevationLoss: Int
-    pace: Int # in seconds per mile
-    time: Int # elapsed seconds
-    # fields that can be calculated instead of stored should be calculated on the backend
-    # like how the frontend team at nutrien were asking for things, get in the habit of making devs lives easier
-    elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
+  elevationGain: Int
+  elevationLoss: Int
+  pace: Int # in seconds per mile
+  time: Int # elapsed seconds
+  # fields that can be calculated instead of stored should be calculated on the backend
+  # like how the frontend team at nutrien were asking for things, get in the habit of making devs lives easier
+  elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
 }
 
 type CreatedPlan {
-    success: Boolean!
+  success: Boolean!
 }
 
 input PlanInput {
-    id: String!
-    name: String
-    startTime: String # start time of the event
-    goalHours: Int!
-    goalMinutes: Int!
-
+  id: String!
+  name: String
+  startTime: String # start time of the event
+  goalHours: Int!
+  goalMinutes: Int!
 }

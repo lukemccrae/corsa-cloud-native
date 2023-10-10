@@ -1,70 +1,96 @@
-import { calculateDistance } from './haversine.helper'
+import { calculateDistance } from "./haversine.helper";
+import haversine from "haversine";
 
-type LatLng = [number, number]
+type LatLng = [number, number];
+type Altitude = [number];
+type LatLngAltitude = [number, number, number];
 
 interface Feature {
-  type: string
+  type: string;
   geometry: {
-    type: string
-    coordinates: LatLng[]
-  }
+    type: string;
+    coordinates: LatLngAltitude[];
+  };
   properties: {
-    id: number
-    name: string
-    remainder: number
-  }
+    id: number;
+    name: string;
+  };
 }
 
 // Create an array of GeoJSON Point features
-export const makeGeoJson = (latLng: [LatLng], altitude: number[]): any => {
+export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
   const featureCollection: {
-    type: string
-    features: Feature[]
+    type: string;
+    features: Feature[];
   } = {
-    type: 'FeatureCollection',
-    features: []
-  }
+    type: "FeatureCollection",
+    features: [],
+  };
 
-  const feature: Feature = {
-    type: 'Feature',
+  let feature: Feature = {
+    type: "Feature",
     geometry: {
-      type: 'MultiPoint',
-      coordinates: []
+      type: "MultiPoint",
+      coordinates: [],
     },
     properties: {
       id: 1,
-      name: 'name',
-      remainder: 0
-    }
-  }
+      name: "name",
+    },
+  };
+
+  let distance = 0;
+  let pointsForThisMile: LatLngAltitude[] = [];
 
   // iterate through latLng array and create a new feature collection for each mile
-  for (let i = 0; i < latLng.length; i++) {
-    const pointsForThisMile: LatLng[] = []
-    // add up distance of points for this mile in feet
-    let distance = 0
+  for (let i = 1; i < latLng.length; i++) {
+    // last loop breaks, return 1 i early
+    if (i === latLng.length - 2) return featureCollection;
 
-    // if this is the last tick of the loop add the remaining distance as a percentage
-    if (i === latLng.length - 1) {
-      feature.properties.remainder = distance / 5280
+    // let feetBetweenPoints =
+    //   haversine(
+    //     {
+    //       latitude: latLng[i][0],
+    //       longitude: latLng[i][1],
+    //     },
+    //     {
+    //       latitude: latLng[i + 1][0],
+    //       longitude: latLng[i + 1][1],
+    //     },
+    //     { unit: "mile" },
+    //   ) * 5280;
 
-    // if its not the last tick keep adding points
-    } else {
-      // this will break on the last loop
-      distance += calculateDistance(latLng[i][1], latLng[i][0], latLng[i + 1][1], latLng[i + 1][0])
+    let feetBetweenPoints = calculateDistance(
+      latLng[i][0],
+      latLng[i][1],
+      latLng[i + 1][0],
+      latLng[i + 1][1],
+    );
 
-      pointsForThisMile.push(latLng[i].reverse() as LatLng)
+    distance += feetBetweenPoints;
 
-      if (distance >= 5280) {
-        feature.geometry.coordinates = pointsForThisMile
-        featureCollection.features.push(feature)
+    const latLongToPush = latLng[i].reverse();
+    latLongToPush.push(altitude[i]);
+    pointsForThisMile.push(latLongToPush as LatLngAltitude);
+    feature.geometry.coordinates = pointsForThisMile;
 
-        // reset points for the new mile
-        pointsForThisMile.length = 0
-        feature.geometry.coordinates.length = 0
-      }
+    // if distance is over a mile, push feature into collection and reset
+    if (distance >= 5280) {
+      featureCollection.features.push(feature);
+      distance = 0;
+
+      feature = {
+        type: "Feature",
+        geometry: {
+          type: "MultiPoint",
+          coordinates: [],
+        },
+        properties: {
+          id: 1,
+          name: "name",
+        },
+      };
+      pointsForThisMile = [];
     }
   }
-
-  return featureCollection
-}
+};

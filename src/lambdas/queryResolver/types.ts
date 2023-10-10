@@ -49,6 +49,7 @@ export type Mutation = {
 export type MutationCreatePlanFromActivityArgs = {
   activityId: Scalars['ID']['input'];
   token: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -63,8 +64,6 @@ export type MutationUpdatePlanArgs = {
 
 export type Plan = {
   __typename?: 'Plan';
-  goalHours?: Maybe<Scalars['Int']['output']>;
-  goalMinutes?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
@@ -230,14 +229,12 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'token'>>;
+  createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'token' | 'userId'>>;
   updateActivityById?: Resolver<ResolversTypes['Activity'], ParentType, ContextType, RequireFields<MutationUpdateActivityByIdArgs, 'id'>>;
   updatePlan?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<MutationUpdatePlanArgs, 'planInput'>>;
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
-  goalHours?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  goalMinutes?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
