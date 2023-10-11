@@ -82,7 +82,7 @@ export type Query = {
   __typename?: 'Query';
   getActivities: Array<Maybe<Activity>>;
   getActivityById?: Maybe<Activity>;
-  getPlanByActivityId?: Maybe<Plan>;
+  getPlansByUserId?: Maybe<Plan>;
 };
 
 
@@ -101,8 +101,8 @@ export type QueryGetActivityByIdArgs = {
 };
 
 
-export type QueryGetPlanByActivityIdArgs = {
-  id: Scalars['String']['input'];
+export type QueryGetPlansByUserIdArgs = {
+  userId: Scalars['String']['input'];
 };
 
 
@@ -245,7 +245,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
-  getPlanByActivityId?: Resolver<Maybe<ResolversTypes['Plan']>, ParentType, ContextType, RequireFields<QueryGetPlanByActivityIdArgs, 'id'>>;
+  getPlansByUserId?: Resolver<Maybe<ResolversTypes['Plan']>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
 };
 
 export type Resolvers<ContextType = any> = {

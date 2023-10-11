@@ -8,7 +8,7 @@ type Query {
     dateTo: Int!
     token: String!
   ): [Activity]!
-  getPlanByActivityId(id: String!): Plan
+  getPlansByUserId(userId: String!): Plan
 }
 
 type Mutation {

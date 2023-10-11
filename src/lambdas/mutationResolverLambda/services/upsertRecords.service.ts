@@ -69,11 +69,11 @@ export const createPlanFromActivity = async (
       console.log("File uploaded to S3:", data);
     });
 
-    const { Bucket, Key } = params;
+    const { Key } = params;
 
     const queueParams = {
       QueueUrl: process.env.METADATA_QUEUE_URL,
-      MessageBody: JSON.stringify({ Bucket, Key, userId }), // SQS body is limited to 256KB
+      MessageBody: JSON.stringify({ Key, userId }), // SQS body is limited to 256KB
     };
 
     sqs.sendMessage(queueParams, (err: Error, data: any) => {
