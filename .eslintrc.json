@@ -9,8 +9,9 @@
         "sourceType": "module"
     },
     "rules": {
-        "max-len": ["error", { "code": 100 }],
-        "prettier/prettier": "error"
+        "max-len": ["error", { "code": 80 }],
+        "comma-dangle": ["error", "never"],
+        "semi": 0
     },
     "plugins": ["prettier"]
 }

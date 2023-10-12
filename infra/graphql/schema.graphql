@@ -8,7 +8,7 @@ type Query {
     dateTo: Int!
     token: String!
   ): [Activity]!
-  getPlansByUserId(userId: String!): Plan
+  getPlansByUserId(userId: String!): [Plan]
 }
 
 type Mutation {
@@ -18,6 +18,7 @@ type Mutation {
     activityId: ID!
     token: String!
     userId: ID!
+    planName: String!
   ): CreatedPlan!
 }
 
@@ -32,6 +33,7 @@ type Activity {
 
 type Plan {
   id: String
+  userId: String
   name: String
   startTime: String # start time of the event
   mileData: [MileData] # an array of mile information

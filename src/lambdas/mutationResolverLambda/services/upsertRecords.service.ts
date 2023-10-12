@@ -1,15 +1,16 @@
-import { stravaGetHttpClient } from "../../clients/httpClient";
-import { makeGeoJson } from "../helpers/geoJson.helper";
-import S3 = require("aws-sdk/clients/s3");
-import SQS = require("aws-sdk/clients/sqs");
-import { type CreatedPlan } from "../types";
-import { v4 as uuidv4 } from "uuid";
-import { mockActivityStream } from "../mockActivityStream";
+import { stravaGetHttpClient } from '../../clients/httpClient';
+import { makeGeoJson } from '../helpers/geoJson.helper';
+import S3 = require('aws-sdk/clients/s3');
+import SQS = require('aws-sdk/clients/sqs');
+import { type CreatedPlan } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+import { mockActivityStream } from '../mockActivityStream';
 
 interface CreatePlanProps {
   activityId: string;
   token: string;
   userId: number;
+  planName: string;
 }
 
 export const upsertActivityById = (): any => {
@@ -21,72 +22,74 @@ export const updatePlanById = (): any => {
 };
 
 export const createPlanFromActivity = async (
-  props: CreatePlanProps,
+  props: CreatePlanProps
 ): Promise<CreatedPlan> => {
-  const { token, userId } = props;
-  const url = `https://www.strava.com/api/v3/activities/${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
+  const { token, userId, planName } = props;
+  const url = `https://www.strava.com/api/v3/activities/
+    ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
+
   try {
     const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
     const geoJson = makeGeoJson(
       latLngAltitudeStream.latlng.data,
-      latLngAltitudeStream.altitude.data,
+      latLngAltitudeStream.altitude.data
     );
 
     // console.log(JSON.stringify(geoJson), "<< geoJson string");
     // console.log(geoJson, "<< geoJson");
 
-    const s3 = new S3({ region: "us-east-1" });
+    const s3 = new S3({ region: 'us-east-1' });
 
     const sqs = new SQS();
 
     if (
       process.env.GEO_JSON_BUCKET_NAME == null ||
-      process.env.GEO_JSON_BUCKET_NAME === ""
+      process.env.GEO_JSON_BUCKET_NAME === ''
     ) {
-      throw new Error("S3 bucket name not provided");
+      throw new Error('S3 bucket name not provided');
     }
 
     if (
       process.env.METADATA_QUEUE_URL == null ||
-      process.env.METADATA_QUEUE_URL === ""
+      process.env.METADATA_QUEUE_URL === ''
     ) {
-      throw new Error("SQS queue URL not provided");
+      throw new Error('SQS queue URL not provided');
     }
 
     const params = {
       Bucket: process.env.GEO_JSON_BUCKET_NAME,
       Key: uuidv4(),
-      Body: JSON.stringify(geoJson),
+      Body: JSON.stringify(geoJson)
     };
 
     s3.putObject(params, (err: Error, data: any) => {
       if (err instanceof Error) {
-        console.error("Error uploading to S3:", err);
+        console.error('Error uploading to S3:', err);
         throw new Error(`Error uploading to S3: ${err.message}`);
       }
-      console.log("File uploaded to S3:", data);
+      console.log('File uploaded to S3:', data);
     });
 
     const { Key } = params;
 
     const queueParams = {
       QueueUrl: process.env.METADATA_QUEUE_URL,
-      MessageBody: JSON.stringify({ Key, userId }), // SQS body is limited to 256KB
+      MessageBody: JSON.stringify({ Key, userId, planName }) // SQS body is limited to 256KB
     };
 
     sqs.sendMessage(queueParams, (err: Error, data: any) => {
       if (err instanceof Error) {
-        console.log("Error sending to SQS:", err);
+        console.log('Error sending to SQS:', err);
         throw new Error(`Error sending to SQS: ${err.message}`);
       }
-      console.log("Message sent to SQS:", data);
+      console.log('Message sent to SQS:', data);
     });
 
     return { success: true };
   } catch (e) {
-    console.log(e, "<< error");
+    console.log(e, '<< error');
     return { success: false };
   }
 };

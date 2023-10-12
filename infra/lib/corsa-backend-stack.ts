@@ -1,35 +1,35 @@
-import * as cdk from "aws-cdk-lib";
-import * as appsync from "aws-cdk-lib/aws-appsync";
-import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
-import * as s3 from "aws-cdk-lib/aws-s3";
-import * as sqs from "aws-cdk-lib/aws-sqs";
+import * as cdk from 'aws-cdk-lib';
+import * as appsync from 'aws-cdk-lib/aws-appsync';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 // import * as s3 from 'aws-cdk-lib/aws-s3'
-import * as iam from "aws-cdk-lib/aws-iam";
-import { type Construct } from "constructs";
-import { Duration } from "aws-cdk-lib";
-import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import * as iam from 'aws-cdk-lib/aws-iam';
+import { type Construct } from 'constructs';
+import { Duration } from 'aws-cdk-lib';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // Create a DynamoDB table for storing metadata for geoJSON track
-    const trackMetadataTable = new dynamodb.Table(this, "TrackMetadataTable", {
+    const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
       partitionKey: {
-        name: "UserId",
-        type: dynamodb.AttributeType.STRING,
+        name: 'UserId',
+        type: dynamodb.AttributeType.STRING
       },
       sortKey: {
-        name: "BucketKey",
-        type: dynamodb.AttributeType.STRING,
-      },
+        name: 'BucketKey',
+        type: dynamodb.AttributeType.STRING
+      }
     });
 
-    const geoJsonBucket = new s3.Bucket(this, "geoJsonBucket");
+    const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket');
 
-    const metadataQueue = new sqs.Queue(this, "TrackMetadataQueue", {
-      visibilityTimeout: cdk.Duration.seconds(30), // Set the visibility timeout as needed
+    const metadataQueue = new sqs.Queue(this, 'TrackMetadataQueue', {
+      visibilityTimeout: cdk.Duration.seconds(30) // Set the visibility timeout as needed
     });
 
     // when a new item is added to the bucket trigger an event and write metadata to dynamo
@@ -37,9 +37,9 @@ export class CorsaBackendStack extends cdk.Stack {
     // this should include name, date, distance
 
     // Create a GraphQL API
-    const api = new appsync.GraphqlApi(this, "CorsaGraphAPI", {
-      name: "corsa-graphql-api",
-      schema: appsync.SchemaFile.fromAsset("infra/graphql/schema.graphql"), // Replace with the path to your GraphQL schema file
+    const api = new appsync.GraphqlApi(this, 'CorsaGraphAPI', {
+      name: 'corsa-graphql-api',
+      schema: appsync.SchemaFile.fromAsset('infra/graphql/schema.graphql') // Replace with the path to your GraphQL schema file
 
       // I dont want to include this yet
       // I can develop with my own strava credentials in an ENV
@@ -58,94 +58,94 @@ export class CorsaBackendStack extends cdk.Stack {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: [
-            "logs:CreateLogGroup",
-            "logs:CreateLogStream",
-            "logs:PutLogEvents",
+            'logs:CreateLogGroup',
+            'logs:CreateLogStream',
+            'logs:PutLogEvents'
           ],
-          resources: ["*"], // Adjust this to limit resources as needed
-        }),
-      ],
+          resources: ['*'] // Adjust this to limit resources as needed
+        })
+      ]
     });
 
-    const cloudwatchPolicy = new iam.Policy(this, "CloudWatchLogsPolicy", {
-      document: cloudWatchLogsPolicy,
+    const cloudwatchPolicy = new iam.Policy(this, 'CloudWatchLogsPolicy', {
+      document: cloudWatchLogsPolicy
     });
 
     // Attach the policy to your role
-    const queryLambdaRole = new iam.Role(this, "QueryLambdaExecutionRole", {
-      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    const queryLambdaRole = new iam.Role(this, 'QueryLambdaExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
     });
 
     // Attach the policy to your role
     const mutationLambdaRole = new iam.Role(
       this,
-      "MutationLambdaExecutionRole",
+      'MutationLambdaExecutionRole',
       {
-        assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
-      },
+        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+      }
     );
 
     const queueTriggeredMetadataWriterLambdaRole = new iam.Role(
       this,
-      "QueueTriggeredMetadataWriterLambdaRole",
+      'QueueTriggeredMetadataWriterLambdaRole',
       {
-        assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
-      },
+        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+      }
     );
 
     // Create a Lambda function for the Query resolver
     // This query resolver will handle reading records from the metadata table
     const queryResolverLambda = new lambda.Function(
       this,
-      "QueryResolverLambda",
+      'QueryResolverLambda',
       {
         runtime: lambda.Runtime.NODEJS_18_X,
-        handler: "index.handler",
-        code: lambda.Code.fromAsset("src/lambdas/queryResolverLambda/dist"),
+        handler: 'index.handler',
+        code: lambda.Code.fromAsset('src/lambdas/queryResolverLambda/dist'),
         role: queryLambdaRole,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-        },
-      },
+          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+        }
+      }
     );
 
     // Create a Lambda function for the Mutation resolver
     // This mutation resolver will handle updating records on the metadata table
     const mutationResolverLambda = new lambda.Function(
       this,
-      "MutationResolverLambda",
+      'MutationResolverLambda',
       {
         runtime: lambda.Runtime.NODEJS_18_X,
-        handler: "index.handler",
-        code: lambda.Code.fromAsset("src/lambdas/mutationResolverLambda/dist"),
+        handler: 'index.handler',
+        code: lambda.Code.fromAsset('src/lambdas/mutationResolverLambda/dist'),
         role: mutationLambdaRole,
         timeout: Duration.seconds(15),
         environment: {
           DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
           GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName,
-          METADATA_QUEUE_URL: metadataQueue.queueUrl,
-        },
-      },
+          METADATA_QUEUE_URL: metadataQueue.queueUrl
+        }
+      }
     );
 
     const queueTriggeredMetadataWriterLambda = new lambda.Function(
       this,
-      "queueTriggeredMetadataWriterLambda",
+      'queueTriggeredMetadataWriterLambda',
       {
         runtime: lambda.Runtime.NODEJS_18_X,
-        handler: "index.handler",
-        code: lambda.Code.fromAsset("src/lambdas/queueMetadataLambda/dist"),
+        handler: 'index.handler',
+        code: lambda.Code.fromAsset('src/lambdas/queueMetadataLambda/dist'),
         role: queueTriggeredMetadataWriterLambdaRole,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-        },
-      },
+          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+        }
+      }
     );
 
     queueTriggeredMetadataWriterLambda.addEventSource(
       new SqsEventSource(metadataQueue, {
-        batchSize: 1,
-      }),
+        batchSize: 1
+      })
     );
 
     // permissions
@@ -161,46 +161,54 @@ export class CorsaBackendStack extends cdk.Stack {
 
     metadataQueue.grantSendMessages(mutationResolverLambda);
 
+    const userIdDynamoPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['dynamodb:BatchGetItem'],
+      resources: [`${trackMetadataTable.tableArn}/UserId`]
+    });
+
+    queryLambdaRole.addToPolicy(userIdDynamoPolicy);
+
     metadataQueue.grant(
       queueTriggeredMetadataWriterLambda,
-      "sqs:DeleteMessage",
+      'sqs:DeleteMessage'
     );
     metadataQueue.grant(
       queueTriggeredMetadataWriterLambda,
-      "sqs:GetQueueAttributes",
+      'sqs:GetQueueAttributes'
     );
     metadataQueue.grant(
       queueTriggeredMetadataWriterLambda,
-      "sqs:ReceiveMessage",
+      'sqs:ReceiveMessage'
     );
 
     const queryDataSource = api.addLambdaDataSource(
-      "QueryDataSource",
-      queryResolverLambda,
+      'QueryDataSource',
+      queryResolverLambda
     );
     const mutationDataSource = api.addLambdaDataSource(
-      "MutationDataSource",
-      mutationResolverLambda,
+      'MutationDataSource',
+      mutationResolverLambda
     );
 
-    queryDataSource.createResolver("getActivityById", {
-      typeName: "Query",
-      fieldName: "getActivityById",
+    queryDataSource.createResolver('getActivityById', {
+      typeName: 'Query',
+      fieldName: 'getActivityById'
     });
 
-    queryDataSource.createResolver("getActivities", {
-      typeName: "Query",
-      fieldName: "getActivities",
+    queryDataSource.createResolver('getActivities', {
+      typeName: 'Query',
+      fieldName: 'getActivities'
     });
 
-    queryDataSource.createResolver("getPlansByUserId", {
-      typeName: "Query",
-      fieldName: "getPlansByUserId",
+    queryDataSource.createResolver('getPlansByUserId', {
+      typeName: 'Query',
+      fieldName: 'getPlansByUserId'
     });
 
-    mutationDataSource.createResolver("createPlanFromActivity", {
-      typeName: "Mutation",
-      fieldName: "createPlanFromActivity",
+    mutationDataSource.createResolver('createPlanFromActivity', {
+      typeName: 'Mutation',
+      fieldName: 'createPlanFromActivity'
     });
 
     // TODO: what is this output doing? i dont remember having this before
