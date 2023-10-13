@@ -1,11 +1,12 @@
 import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
+import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 import SQS = require('aws-sdk/clients/sqs');
 import { Plan, type CreatedPlan, UpdatedPlan } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-import { NoFragmentCyclesRule } from 'graphql';
+import { mockActivityStream } from '../mockActivityStream';
 
 interface CreatePlanProps {
   activityId: string;
@@ -72,63 +73,64 @@ export const createPlanFromActivity = async (
     ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
 
   try {
-    const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
-    // const latLngAltitudeStream = JSON.parse(mockActivityStream);
+    // const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
+    const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
     const geoJson = makeGeoJson(
       latLngAltitudeStream.latlng.data,
       latLngAltitudeStream.altitude.data
     );
 
-    // console.log(JSON.stringify(geoJson), "<< geoJson string");
-    // console.log(geoJson, "<< geoJson");
+    const mileData = makeMileData(geoJson);
 
-    const s3 = new S3({ region: 'us-east-1' });
+    console.log(mileData, '<< mileData');
 
-    const sqs = new SQS();
+    // const s3 = new S3({ region: 'us-east-1' });
 
-    if (
-      process.env.GEO_JSON_BUCKET_NAME == null ||
-      process.env.GEO_JSON_BUCKET_NAME === ''
-    ) {
-      throw new Error('S3 bucket name not provided');
-    }
+    // const sqs = new SQS();
 
-    if (
-      process.env.METADATA_QUEUE_URL == null ||
-      process.env.METADATA_QUEUE_URL === ''
-    ) {
-      throw new Error('SQS queue URL not provided');
-    }
+    // if (
+    //   process.env.GEO_JSON_BUCKET_NAME == null ||
+    //   process.env.GEO_JSON_BUCKET_NAME === ''
+    // ) {
+    //   throw new Error('S3 bucket name not provided');
+    // }
 
-    const params = {
-      Bucket: process.env.GEO_JSON_BUCKET_NAME,
-      Key: uuidv4(),
-      Body: JSON.stringify(geoJson)
-    };
+    // if (
+    //   process.env.METADATA_QUEUE_URL == null ||
+    //   process.env.METADATA_QUEUE_URL === ''
+    // ) {
+    //   throw new Error('SQS queue URL not provided');
+    // }
 
-    s3.putObject(params, (err: Error, data: any) => {
-      if (err instanceof Error) {
-        console.error('Error uploading to S3:', err);
-        throw new Error(`Error uploading to S3: ${err.message}`);
-      }
-      console.log('File uploaded to S3:', data);
-    });
+    // const params = {
+    //   Bucket: process.env.GEO_JSON_BUCKET_NAME,
+    //   Key: uuidv4(),
+    //   Body: JSON.stringify(geoJson)
+    // };
 
-    const { Key } = params;
+    // s3.putObject(params, (err: Error, data: any) => {
+    //   if (err instanceof Error) {
+    //     console.error('Error uploading to S3:', err);
+    //     throw new Error(`Error uploading to S3: ${err.message}`);
+    //   }
+    //   console.log('File uploaded to S3:', data);
+    // });
 
-    const queueParams = {
-      QueueUrl: process.env.METADATA_QUEUE_URL,
-      MessageBody: JSON.stringify({ Key, userId, planName, startTime }) // SQS body is limited to 256KB
-    };
+    // const { Key } = params;
 
-    sqs.sendMessage(queueParams, (err: Error, data: any) => {
-      if (err instanceof Error) {
-        console.log('Error sending to SQS:', err);
-        throw new Error(`Error sending to SQS: ${err.message}`);
-      }
-      console.log('Message sent to SQS:', data);
-    });
+    // const queueParams = {
+    //   QueueUrl: process.env.METADATA_QUEUE_URL,
+    //   MessageBody: JSON.stringify({ Key, userId, planName, startTime }) // SQS body is limited to 256KB
+    // };
+
+    // sqs.sendMessage(queueParams, (err: Error, data: any) => {
+    //   if (err instanceof Error) {
+    //     console.log('Error sending to SQS:', err);
+    //     throw new Error(`Error sending to SQS: ${err.message}`);
+    //   }
+    //   console.log('Message sent to SQS:', data);
+    // });
 
     return { success: true };
   } catch (e) {
