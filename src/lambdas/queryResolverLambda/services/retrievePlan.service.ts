@@ -3,13 +3,13 @@ import { Plan } from '../types';
 
 type dbMileData = {
   elevationGain: {
-    N: number;
+    N: Number;
   };
   elevationLoss: {
     N: Number;
   };
   pace: {
-    N: number;
+    N: Number;
   };
   time: {
     S: String;
@@ -24,16 +24,16 @@ type DbPlan = {
     L: [dbMileData];
   };
   BucketKey: {
-    S: string;
-  };
-  UserId: {
-    S: string;
-  };
-  StartTime: {
     S: String;
   };
+  UserId: {
+    S: String;
+  };
+  StartTime: {
+    N: Number;
+  };
   Name: {
-    S: string;
+    S: String;
   };
 };
 
@@ -66,7 +66,7 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
       id: i.BucketKey.S,
       userId: i.UserId.S,
       name: i.Name.S,
-      startTime: i.StartTime.S,
+      startTime: i.StartTime.N,
       mileData: i.MileData.L.map((i) => ({
         elevationGain: i.elevationGain.N ?? null,
         elevationLoss: i.elevationLoss.N ?? null,

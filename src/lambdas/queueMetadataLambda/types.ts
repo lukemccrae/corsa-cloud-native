@@ -18,10 +18,15 @@ export type Scalars = {
 
 export type Activity = {
   __typename?: 'Activity';
-  distance?: Maybe<Scalars['Float']['output']>;
+  distance: Scalars['Float']['output'];
   id: Scalars['ID']['output'];
-  name?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
   start_date?: Maybe<Scalars['String']['output']>;
+};
+
+export type CreatedPlan = {
+  __typename?: 'CreatedPlan';
+  success: Scalars['Boolean']['output'];
 };
 
 export type MileData = {
@@ -33,51 +38,52 @@ export type MileData = {
   time?: Maybe<Scalars['Int']['output']>;
 };
 
+export type MileDataInput = {
+  pace?: InputMaybe<Scalars['Int']['input']>;
+  time?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
-  createPlanFromActivity: Scalars['Boolean']['output'];
-  updateActivityById: Activity;
-  updatePlan: Plan;
+  createPlanFromActivity: CreatedPlan;
+  updatePlanById: Plan;
 };
 
 
 export type MutationCreatePlanFromActivityArgs = {
   activityId: Scalars['ID']['input'];
+  planName: Scalars['String']['input'];
+  token: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
-export type MutationUpdateActivityByIdArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationUpdatePlanArgs = {
+export type MutationUpdatePlanByIdArgs = {
   planInput: PlanInput;
 };
 
 export type Plan = {
   __typename?: 'Plan';
-  goalHours?: Maybe<Scalars['Int']['output']>;
-  goalMinutes?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
-  startTime?: Maybe<Scalars['String']['output']>;
+  startTime?: Maybe<Scalars['Int']['output']>;
+  userId?: Maybe<Scalars['String']['output']>;
 };
 
 export type PlanInput = {
-  goalHours: Scalars['Int']['input'];
-  goalMinutes: Scalars['Int']['input'];
-  id: Scalars['String']['input'];
-  name?: InputMaybe<Scalars['String']['input']>;
-  startTime?: InputMaybe<Scalars['String']['input']>;
+  mileData?: InputMaybe<Array<InputMaybe<MileDataInput>>>;
+  planName?: InputMaybe<Scalars['String']['input']>;
+  sortKey: Scalars['String']['input'];
+  startTime?: InputMaybe<Scalars['Int']['input']>;
+  userId: Scalars['String']['input'];
 };
 
 export type Query = {
   __typename?: 'Query';
   getActivities: Array<Maybe<Activity>>;
   getActivityById?: Maybe<Activity>;
-  getPlanByActivityId?: Maybe<Plan>;
+  getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
 };
 
 
@@ -96,8 +102,13 @@ export type QueryGetActivityByIdArgs = {
 };
 
 
-export type QueryGetPlanByActivityIdArgs = {
-  id: Scalars['String']['input'];
+export type QueryGetPlansByUserIdArgs = {
+  userId: Scalars['String']['input'];
+};
+
+export type UpdatedPlan = {
+  __typename?: 'updatedPlan';
+  success: Scalars['Boolean']['output'];
 };
 
 
@@ -173,37 +184,48 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Activity: ResolverTypeWrapper<Activity>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   MileData: ResolverTypeWrapper<MileData>;
+  MileDataInput: MileDataInput;
   Mutation: ResolverTypeWrapper<{}>;
   Plan: ResolverTypeWrapper<Plan>;
   PlanInput: PlanInput;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  updatedPlan: ResolverTypeWrapper<UpdatedPlan>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Activity: Activity;
   Boolean: Scalars['Boolean']['output'];
+  CreatedPlan: CreatedPlan;
   Float: Scalars['Float']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   MileData: MileData;
+  MileDataInput: MileDataInput;
   Mutation: {};
   Plan: Plan;
   PlanInput: PlanInput;
   Query: {};
   String: Scalars['String']['output'];
+  updatedPlan: UpdatedPlan;
 };
 
 export type ActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
-  distance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  distance?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CreatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatedPlan'] = ResolversParentTypes['CreatedPlan']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -217,32 +239,37 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createPlanFromActivity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId'>>;
-  updateActivityById?: Resolver<ResolversTypes['Activity'], ParentType, ContextType, RequireFields<MutationUpdateActivityByIdArgs, 'id'>>;
-  updatePlan?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<MutationUpdatePlanArgs, 'planInput'>>;
+  createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
+  updatePlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
-  goalHours?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  goalMinutes?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  userId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
-  getPlanByActivityId?: Resolver<Maybe<ResolversTypes['Plan']>, ParentType, ContextType, RequireFields<QueryGetPlanByActivityIdArgs, 'id'>>;
+  getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
+};
+
+export type UpdatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['updatedPlan'] = ResolversParentTypes['updatedPlan']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
   Activity?: ActivityResolvers<ContextType>;
+  CreatedPlan?: CreatedPlanResolvers<ContextType>;
   MileData?: MileDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  updatedPlan?: UpdatedPlanResolvers<ContextType>;
 };
 

@@ -1,16 +1,19 @@
-import type { CodegenConfig } from '@graphql-codegen/cli'
+import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   overwrite: true,
   schema: './infra/graphql/schema.graphql',
   generates: {
-    'src/lambdas/queryResolver/types.ts': {
+    'src/lambdas/queryResolverLambda/types.ts': {
       plugins: ['typescript', 'typescript-resolvers']
     },
-    'src/lambdas/mutationResolver/types.ts': {
+    'src/lambdas/mutationResolverLambda/types.ts': {
+      plugins: ['typescript', 'typescript-resolvers']
+    },
+    'src/lambdas/queueMetadataLambda/types.ts': {
       plugins: ['typescript', 'typescript-resolvers']
     }
   }
-}
+};
 
-export default config
+export default config;

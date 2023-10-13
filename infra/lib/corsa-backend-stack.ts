@@ -211,6 +211,11 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'createPlanFromActivity'
     });
 
+    mutationDataSource.createResolver('updatePlanById', {
+      typeName: 'Mutation',
+      fieldName: 'updatePlanById'
+    });
+
     // TODO: what is this output doing? i dont remember having this before
 
     // Output the GraphQL API endpoint

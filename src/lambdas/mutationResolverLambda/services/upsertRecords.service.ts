@@ -2,29 +2,72 @@ import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
 import S3 = require('aws-sdk/clients/s3');
 import SQS = require('aws-sdk/clients/sqs');
-import { type CreatedPlan } from '../types';
+import { Plan, type CreatedPlan, UpdatedPlan } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-import { mockActivityStream } from '../mockActivityStream';
+import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+import { NoFragmentCyclesRule } from 'graphql';
 
 interface CreatePlanProps {
   activityId: string;
   token: string;
-  userId: number;
+  userId: string;
   planName: string;
+  bucketKey: string;
+  startTime: number;
 }
 
-export const upsertActivityById = (): any => {
-  return {};
-};
+interface UpdatePlanProps {
+  startTime: number;
+  userId: string;
+  planName: string;
+  sortKey: string;
+}
 
-export const updatePlanById = (): any => {
-  return {};
+const client = new DynamoDBClient({ region: 'us-east-1' });
+
+export const updatePlanById = async (
+  planInputArgs: UpdatePlanProps
+): Promise<UpdatedPlan> => {
+  const { startTime, userId, planName, sortKey } = planInputArgs;
+
+  const command = new UpdateItemCommand({
+    TableName: process.env.DYNAMODB_TABLE_NAME,
+    Key: {
+      UserId: { S: userId },
+      BucketKey: { S: sortKey }
+    },
+    UpdateExpression: 'SET #Name = :nameValue, #StartTime = :startTimeValue',
+    ExpressionAttributeNames: {
+      '#Name': 'Name',
+      '#StartTime': 'StartTime'
+      // '#pace': 'pace'
+    },
+    ExpressionAttributeValues: {
+      ':nameValue': { S: planName },
+      ':startTimeValue': { N: String(startTime) }
+      // ':paceValue': { S: newPace }
+    }
+  });
+
+  try {
+    const response = await client.send(command);
+    if (response.$metadata.httpStatusCode === 200)
+      return {
+        success: true
+      };
+    throw new Error('Updating the plan failed');
+  } catch (e) {
+    console.log(e, '<< error');
+    return {
+      success: false
+    };
+  }
 };
 
 export const createPlanFromActivity = async (
   props: CreatePlanProps
 ): Promise<CreatedPlan> => {
-  const { token, userId, planName } = props;
+  const { token, userId, planName, startTime } = props;
   const url = `https://www.strava.com/api/v3/activities/
     ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
 
@@ -76,7 +119,7 @@ export const createPlanFromActivity = async (
 
     const queueParams = {
       QueueUrl: process.env.METADATA_QUEUE_URL,
-      MessageBody: JSON.stringify({ Key, userId, planName }) // SQS body is limited to 256KB
+      MessageBody: JSON.stringify({ Key, userId, planName, startTime }) // SQS body is limited to 256KB
     };
 
     sqs.sendMessage(queueParams, (err: Error, data: any) => {

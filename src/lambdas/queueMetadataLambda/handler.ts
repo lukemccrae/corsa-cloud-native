@@ -22,7 +22,7 @@ export const writeMetadataToDynamo = async (
       BucketKey: { S: Key },
       UserId: { S: userId },
       Name: { S: planName },
-      StartTime: { S: String(Date.now()) },
+      StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
       MileData: { L: [] }
     }
   });

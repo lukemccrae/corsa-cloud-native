@@ -1,5 +1,5 @@
 type Query {
-  getActivityById(id: ID!): Activity
+  getActivityById(id: ID!): Activity # do i need this?
   getActivities(
     userId: String!
     limit: Int!
@@ -12,8 +12,7 @@ type Query {
 }
 
 type Mutation {
-  updateActivityById(id: ID!): Activity!
-  updatePlan(planInput: PlanInput!): Plan!
+  updatePlanById(planInput: PlanInput!): Plan! # do next
   createPlanFromActivity(
     activityId: ID!
     token: String!
@@ -35,7 +34,7 @@ type Plan {
   id: String
   userId: String
   name: String
-  startTime: String # start time of the event
+  startTime: Int # start time of the event
   mileData: [MileData] # an array of mile information
 }
 
@@ -44,8 +43,6 @@ type MileData {
   elevationLoss: Int
   pace: Int # in seconds per mile
   time: Int # elapsed seconds
-  # fields that can be calculated instead of stored should be calculated on the backend
-  # like how the frontend team at nutrien were asking for things, get in the habit of making devs lives easier
   elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
 }
 
@@ -53,10 +50,19 @@ type CreatedPlan {
   success: Boolean!
 }
 
+type updatedPlan {
+  success: Boolean!
+}
+
+input MileDataInput {
+  pace: Int
+  time: Int
+}
+
 input PlanInput {
-  id: String!
-  name: String
-  startTime: String # start time of the event
-  goalHours: Int!
-  goalMinutes: Int!
+  userId: String!
+  sortKey: String!
+  planName: String
+  startTime: Int # start time of the event
+  mileData: [MileDataInput]
 }

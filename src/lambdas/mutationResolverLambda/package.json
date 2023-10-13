@@ -10,6 +10,7 @@
     "ll": "yarn buildlocal && yarn lambda-local -l local/index.js -h handler --watch"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.428.0",
     "@types/aws-lambda": "^8.10.122",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1464.0",
