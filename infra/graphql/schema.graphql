@@ -42,8 +42,7 @@ type MileData {
   elevationGain: Int
   elevationLoss: Int
   pace: Int # in seconds per mile
-  time: Int # elapsed seconds
-  elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
+  # elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
 }
 
 type CreatedPlan {
@@ -56,13 +55,12 @@ type updatedPlan {
 
 input MileDataInput {
   pace: Int
-  time: Int
 }
 
 input PlanInput {
   userId: String!
   sortKey: String!
-  planName: String
-  startTime: Int # start time of the event
-  mileData: [MileDataInput]
+  planName: String!
+  startTime: Int! # start time of the event
+  paces: [Int!]!
 }

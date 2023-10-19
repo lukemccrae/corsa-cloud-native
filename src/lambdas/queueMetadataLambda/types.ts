@@ -33,14 +33,11 @@ export type MileData = {
   __typename?: 'MileData';
   elevationGain?: Maybe<Scalars['Int']['output']>;
   elevationLoss?: Maybe<Scalars['Int']['output']>;
-  elevationProfile?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
   pace?: Maybe<Scalars['Int']['output']>;
-  time?: Maybe<Scalars['Int']['output']>;
 };
 
 export type MileDataInput = {
   pace?: InputMaybe<Scalars['Int']['input']>;
-  time?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Mutation = {
@@ -72,10 +69,10 @@ export type Plan = {
 };
 
 export type PlanInput = {
-  mileData?: InputMaybe<Array<InputMaybe<MileDataInput>>>;
-  planName?: InputMaybe<Scalars['String']['input']>;
+  paces: Array<Scalars['Int']['input']>;
+  planName: Scalars['String']['input'];
   sortKey: Scalars['String']['input'];
-  startTime?: InputMaybe<Scalars['Int']['input']>;
+  startTime: Scalars['Int']['input'];
   userId: Scalars['String']['input'];
 };
 
@@ -232,9 +229,7 @@ export type CreatedPlanResolvers<ContextType = any, ParentType extends Resolvers
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
   elevationGain?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   elevationLoss?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  elevationProfile?: Resolver<Maybe<Array<Maybe<ResolversTypes['Int']>>>, ParentType, ContextType>;
   pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  time?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

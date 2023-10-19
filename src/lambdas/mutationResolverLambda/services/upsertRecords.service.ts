@@ -3,10 +3,9 @@ import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 import SQS = require('aws-sdk/clients/sqs');
-import { Plan, type CreatedPlan, UpdatedPlan } from '../types';
+import { type CreatedPlan, UpdatedPlan } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-import { mockActivityStream } from '../mockActivityStream';
 
 interface CreatePlanProps {
   activityId: string;
@@ -18,10 +17,11 @@ interface CreatePlanProps {
 }
 
 interface UpdatePlanProps {
-  startTime: number;
-  userId: string;
-  planName: string;
   sortKey: string;
+  userId: string;
+  startTime: number;
+  planName: string;
+  paces: number[];
 }
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
@@ -29,7 +29,7 @@ const client = new DynamoDBClient({ region: 'us-east-1' });
 export const updatePlanById = async (
   planInputArgs: UpdatePlanProps
 ): Promise<UpdatedPlan> => {
-  const { startTime, userId, planName, sortKey } = planInputArgs;
+  const { startTime, userId, planName, sortKey, paces } = planInputArgs;
 
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -37,21 +37,26 @@ export const updatePlanById = async (
       UserId: { S: userId },
       BucketKey: { S: sortKey }
     },
-    UpdateExpression: 'SET #Name = :nameValue, #StartTime = :startTimeValue',
+    // This is analogous to a SQL statement
+    UpdateExpression:
+      'SET #Name = :name, #StartTime = :startTime, #Paces = :paces',
+    // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
       '#Name': 'Name',
-      '#StartTime': 'StartTime'
-      // '#pace': 'pace'
+      '#StartTime': 'StartTime',
+      '#Paces': 'Paces'
     },
+    // This passes the values to the write operation
     ExpressionAttributeValues: {
-      ':nameValue': { S: planName },
-      ':startTimeValue': { N: String(startTime) }
-      // ':paceValue': { S: newPace }
+      ':name': { S: planName },
+      ':startTime': { N: String(startTime) },
+      ':paces': { L: paces.map((item) => ({ N: String(item) })) }
     }
   });
 
   try {
     const response = await client.send(command);
+    console.log(response, '<< response');
     if (response.$metadata.httpStatusCode === 200)
       return {
         success: true
@@ -73,65 +78,67 @@ export const createPlanFromActivity = async (
     ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
 
   try {
-    // const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
-    const latLngAltitudeStream = JSON.parse(mockActivityStream);
+    const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
+
+    // to run this locally use this mock
+    // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
     const geoJson = makeGeoJson(
       latLngAltitudeStream.latlng.data,
       latLngAltitudeStream.altitude.data
     );
 
-    const mileData = makeMileData(geoJson);
+    // this could be refactored into makeGeoJson
+    // leaving it separate because makeGeoJson is MESSY
+    const { geoJsonWithMileData, mileData, paces } = makeMileData(geoJson);
 
-    console.log(mileData, '<< mileData');
+    const s3 = new S3({ region: 'us-east-1' });
 
-    // const s3 = new S3({ region: 'us-east-1' });
+    if (
+      process.env.GEO_JSON_BUCKET_NAME == null ||
+      process.env.GEO_JSON_BUCKET_NAME === ''
+    ) {
+      throw new Error('S3 bucket name not provided');
+    }
 
-    // const sqs = new SQS();
+    const bucketParams = {
+      Bucket: process.env.GEO_JSON_BUCKET_NAME,
+      Key: uuidv4(),
+      Body: JSON.stringify(geoJsonWithMileData)
+    };
 
-    // if (
-    //   process.env.GEO_JSON_BUCKET_NAME == null ||
-    //   process.env.GEO_JSON_BUCKET_NAME === ''
-    // ) {
-    //   throw new Error('S3 bucket name not provided');
-    // }
+    const s3result = s3.putObject(bucketParams, (err: Error, data: any) => {
+      if (err instanceof Error) {
+        console.error('Error uploading to S3:', err);
+        throw new Error(`Error uploading to S3: ${err.message}`);
+      }
+      console.log('File uploaded to S3:', data);
+    });
+    console.log(s3result, '<< s3result');
+    const { Key } = bucketParams;
 
-    // if (
-    //   process.env.METADATA_QUEUE_URL == null ||
-    //   process.env.METADATA_QUEUE_URL === ''
-    // ) {
-    //   throw new Error('SQS queue URL not provided');
-    // }
+    const sqs = new SQS();
 
-    // const params = {
-    //   Bucket: process.env.GEO_JSON_BUCKET_NAME,
-    //   Key: uuidv4(),
-    //   Body: JSON.stringify(geoJson)
-    // };
+    const queueParams = {
+      QueueUrl: process.env.METADATA_QUEUE_URL as string, // casting because we checked for undefined earlier
+      MessageBody: JSON.stringify({
+        Key,
+        userId,
+        planName,
+        startTime,
+        mileData,
+        paces
+      }) // SQS body is limited to 256KB
+    };
 
-    // s3.putObject(params, (err: Error, data: any) => {
-    //   if (err instanceof Error) {
-    //     console.error('Error uploading to S3:', err);
-    //     throw new Error(`Error uploading to S3: ${err.message}`);
-    //   }
-    //   console.log('File uploaded to S3:', data);
-    // });
-
-    // const { Key } = params;
-
-    // const queueParams = {
-    //   QueueUrl: process.env.METADATA_QUEUE_URL,
-    //   MessageBody: JSON.stringify({ Key, userId, planName, startTime }) // SQS body is limited to 256KB
-    // };
-
-    // sqs.sendMessage(queueParams, (err: Error, data: any) => {
-    //   if (err instanceof Error) {
-    //     console.log('Error sending to SQS:', err);
-    //     throw new Error(`Error sending to SQS: ${err.message}`);
-    //   }
-    //   console.log('Message sent to SQS:', data);
-    // });
-
+    const sqsresult = sqs.sendMessage(queueParams, (err: Error, data: any) => {
+      if (err instanceof Error) {
+        console.log('Error sending to SQS:', err);
+        throw new Error(`Error sending to SQS: ${err.message}`);
+      }
+      console.log('Message sent to SQS:', data);
+    });
+    console.log(sqsresult, '<< sqsresult');
     return { success: true };
   } catch (e) {
     console.log(e, '<< error');

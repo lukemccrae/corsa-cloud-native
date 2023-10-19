@@ -1,5 +1,5 @@
-import { calculateDistance } from "./haversine.helper";
-import haversine from "haversine";
+import { calculateDistance } from './haversine.helper';
+import haversine from 'haversine';
 
 type LatLng = [number, number];
 type Altitude = [number];
@@ -23,27 +23,27 @@ export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
     type: string;
     features: Feature[];
   } = {
-    type: "FeatureCollection",
-    features: [],
+    type: 'FeatureCollection',
+    features: []
   };
 
   let feature: Feature = {
-    type: "Feature",
+    type: 'Feature',
     geometry: {
-      type: "MultiPoint",
-      coordinates: [],
+      type: 'MultiPoint',
+      coordinates: []
     },
     properties: {
       id: 1,
-      name: "name",
-    },
+      name: 'name'
+    }
   };
 
   let distance = 0;
   let pointsForThisMile: LatLngAltitude[] = [];
 
   // iterate through latLng array and create a new feature collection for each mile
-  for (let i = 1; i < latLng.length; i++) {
+  for (let i = 0; i < latLng.length; i++) {
     // last loop breaks, return 1 i early
     if (i === latLng.length - 2) return featureCollection;
 
@@ -64,13 +64,13 @@ export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
       latLng[i][0],
       latLng[i][1],
       latLng[i + 1][0],
-      latLng[i + 1][1],
+      latLng[i + 1][1]
     );
 
     distance += feetBetweenPoints;
 
     const latLongToPush = latLng[i].reverse();
-    latLongToPush.push(altitude[i]);
+    latLongToPush.push(altitude[i] * 3.28084);
     pointsForThisMile.push(latLongToPush as LatLngAltitude);
     feature.geometry.coordinates = pointsForThisMile;
 
@@ -80,15 +80,15 @@ export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
       distance = 0;
 
       feature = {
-        type: "Feature",
+        type: 'Feature',
         geometry: {
-          type: "MultiPoint",
-          coordinates: [],
+          type: 'MultiPoint',
+          coordinates: []
         },
         properties: {
           id: 1,
-          name: "name",
-        },
+          name: 'name'
+        }
       };
       pointsForThisMile = [];
     }

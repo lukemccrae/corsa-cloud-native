@@ -29,7 +29,7 @@ export class CorsaBackendStack extends cdk.Stack {
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket');
 
     const metadataQueue = new sqs.Queue(this, 'TrackMetadataQueue', {
-      visibilityTimeout: cdk.Duration.seconds(30) // Set the visibility timeout as needed
+      deliveryDelay: Duration.seconds(3) // tryig to fix the behavior
     });
 
     // when a new item is added to the bucket trigger an event and write metadata to dynamo
@@ -137,7 +137,8 @@ export class CorsaBackendStack extends cdk.Stack {
         code: lambda.Code.fromAsset('src/lambdas/queueMetadataLambda/dist'),
         role: queueTriggeredMetadataWriterLambdaRole,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
+          METADATA_QUEUE_URL: metadataQueue.queueUrl
         }
       }
     );

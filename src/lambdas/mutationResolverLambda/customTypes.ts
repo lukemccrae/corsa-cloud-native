@@ -7,6 +7,8 @@ export interface GeoJSONFeature {
   properties: {
     id: number;
     name: string;
+    gain: number;
+    loss: number;
   };
 }
 

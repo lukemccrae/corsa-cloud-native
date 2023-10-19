@@ -1,27 +1,22 @@
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { Plan } from '../types';
 
 type dbMileData = {
-  elevationGain: {
-    N: Number;
-  };
-  elevationLoss: {
-    N: Number;
-  };
-  pace: {
-    N: Number;
-  };
-  time: {
-    S: String;
-  };
-  elevationProfile: {
-    L: [number];
+  M: {
+    elevationGain: {
+      N: Number;
+    };
+    elevationLoss: {
+      N: Number;
+    };
   };
 };
 
 type DbPlan = {
   MileData: {
-    L: [dbMileData];
+    L: dbMileData[];
+  };
+  Paces: {
+    L: [{ N: Number }];
   };
   BucketKey: {
     S: String;
@@ -58,39 +53,23 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
     if (result.Items === undefined) return [];
 
     //not sure why this is necessary
-    const items = JSON.parse(JSON.stringify(result.Items));
+    const plans = JSON.parse(JSON.stringify(result.Items));
 
-    console.log(items, '<< items');
-
-    return items.map((i: DbPlan) => ({
-      id: i.BucketKey.S,
-      userId: i.UserId.S,
-      name: i.Name.S,
-      startTime: i.StartTime.N,
-      mileData: i.MileData.L.map((i) => ({
-        elevationGain: i.elevationGain.N ?? null,
-        elevationLoss: i.elevationLoss.N ?? null,
-        pace: i.pace.N ?? null,
-        time: i.time.S ?? null
-      }))
+    return plans.map((plan: DbPlan) => ({
+      id: plan.BucketKey.S,
+      userId: plan.UserId.S,
+      name: plan.Name.S,
+      startTime: plan.StartTime.N,
+      mileData: plan.MileData.L.map((data, i) => {
+        return {
+          elevationGain: data.M.elevationGain.N,
+          elevationLoss: data.M.elevationLoss.N,
+          // type cast to attibute value so we can access the N field
+          pace: plan.Paces.L[i].N
+        };
+      })
     }));
   } catch (e) {
     console.log(e, '<< error batch get');
   }
-
-  // return {
-  //   id: '123',
-  //   name: 'String',
-  //   startTime: 'date string',
-  //   goalHours: 5,
-  //   goalMinutes: 5,
-  //   mileData: [
-  //     {
-  //       elevationGain: 5,
-  //       elevationLoss: 5,
-  //       pace: 50,
-  //       time: 50
-  //     }
-  //   ]
-  // };
 };
