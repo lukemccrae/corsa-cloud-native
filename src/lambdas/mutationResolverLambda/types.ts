@@ -29,10 +29,35 @@ export type CreatedPlan = {
   success: Scalars['Boolean']['output'];
 };
 
+export type Feature = {
+  __typename?: 'Feature';
+  geometry?: Maybe<Geometry>;
+  type?: Maybe<Scalars['String']['output']>;
+};
+
+export type FeatureCollection = {
+  __typename?: 'FeatureCollection';
+  features?: Maybe<Array<Feature>>;
+  type?: Maybe<Scalars['String']['output']>;
+};
+
+export type GeoProperties = {
+  __typename?: 'GeoProperties';
+  id?: Maybe<Scalars['Int']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+};
+
+export type Geometry = {
+  __typename?: 'Geometry';
+  coordinates?: Maybe<Array<Maybe<Array<Maybe<Scalars['Float']['output']>>>>>;
+  properties?: Maybe<GeoProperties>;
+  type?: Maybe<Scalars['String']['output']>;
+};
+
 export type MileData = {
   __typename?: 'MileData';
-  elevationGain?: Maybe<Scalars['Int']['output']>;
-  elevationLoss?: Maybe<Scalars['Int']['output']>;
+  elevationGain: Scalars['Int']['output'];
+  elevationLoss: Scalars['Int']['output'];
   pace?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -80,6 +105,7 @@ export type Query = {
   __typename?: 'Query';
   getActivities: Array<Maybe<Activity>>;
   getActivityById?: Maybe<Activity>;
+  getGeoJsonBySortKey: FeatureCollection;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
 };
 
@@ -96,6 +122,11 @@ export type QueryGetActivitiesArgs = {
 
 export type QueryGetActivityByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetGeoJsonBySortKeyArgs = {
+  sortKey: Scalars['String']['input'];
 };
 
 
@@ -182,7 +213,11 @@ export type ResolversTypes = {
   Activity: ResolverTypeWrapper<Activity>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
+  Feature: ResolverTypeWrapper<Feature>;
+  FeatureCollection: ResolverTypeWrapper<FeatureCollection>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
+  GeoProperties: ResolverTypeWrapper<GeoProperties>;
+  Geometry: ResolverTypeWrapper<Geometry>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   MileData: ResolverTypeWrapper<MileData>;
@@ -200,7 +235,11 @@ export type ResolversParentTypes = {
   Activity: Activity;
   Boolean: Scalars['Boolean']['output'];
   CreatedPlan: CreatedPlan;
+  Feature: Feature;
+  FeatureCollection: FeatureCollection;
   Float: Scalars['Float']['output'];
+  GeoProperties: GeoProperties;
+  Geometry: Geometry;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   MileData: MileData;
@@ -226,9 +265,34 @@ export type CreatedPlanResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type FeatureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feature'] = ResolversParentTypes['Feature']> = {
+  geometry?: Resolver<Maybe<ResolversTypes['Geometry']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeatureCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeatureCollection'] = ResolversParentTypes['FeatureCollection']> = {
+  features?: Resolver<Maybe<Array<ResolversTypes['Feature']>>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GeoPropertiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['GeoProperties'] = ResolversParentTypes['GeoProperties']> = {
+  id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GeometryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Geometry'] = ResolversParentTypes['Geometry']> = {
+  coordinates?: Resolver<Maybe<Array<Maybe<Array<Maybe<ResolversTypes['Float']>>>>>, ParentType, ContextType>;
+  properties?: Resolver<Maybe<ResolversTypes['GeoProperties']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
-  elevationGain?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  elevationLoss?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  elevationGain?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  elevationLoss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -250,6 +314,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
+  getGeoJsonBySortKey?: Resolver<ResolversTypes['FeatureCollection'], ParentType, ContextType, RequireFields<QueryGetGeoJsonBySortKeyArgs, 'sortKey'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
 };
 
@@ -261,6 +326,10 @@ export type UpdatedPlanResolvers<ContextType = any, ParentType extends Resolvers
 export type Resolvers<ContextType = any> = {
   Activity?: ActivityResolvers<ContextType>;
   CreatedPlan?: CreatedPlanResolvers<ContextType>;
+  Feature?: FeatureResolvers<ContextType>;
+  FeatureCollection?: FeatureCollectionResolvers<ContextType>;
+  GeoProperties?: GeoPropertiesResolvers<ContextType>;
+  Geometry?: GeometryResolvers<ContextType>;
   MileData?: MileDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;

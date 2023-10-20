@@ -28,10 +28,6 @@ export class CorsaBackendStack extends cdk.Stack {
 
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket');
 
-    const metadataQueue = new sqs.Queue(this, 'TrackMetadataQueue', {
-      deliveryDelay: Duration.seconds(3) // tryig to fix the behavior
-    });
-
     // when a new item is added to the bucket trigger an event and write metadata to dynamo
     // metadata will be passed along with the file which will be retrieved from the activity
     // this should include name, date, distance
@@ -85,14 +81,6 @@ export class CorsaBackendStack extends cdk.Stack {
       }
     );
 
-    const queueTriggeredMetadataWriterLambdaRole = new iam.Role(
-      this,
-      'QueueTriggeredMetadataWriterLambdaRole',
-      {
-        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
-      }
-    );
-
     // Create a Lambda function for the Query resolver
     // This query resolver will handle reading records from the metadata table
     const queryResolverLambda = new lambda.Function(
@@ -104,7 +92,8 @@ export class CorsaBackendStack extends cdk.Stack {
         code: lambda.Code.fromAsset('src/lambdas/queryResolverLambda/dist'),
         role: queryLambdaRole,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName
+          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
+          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
         }
       }
     );
@@ -122,45 +111,20 @@ export class CorsaBackendStack extends cdk.Stack {
         timeout: Duration.seconds(15),
         environment: {
           DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName,
-          METADATA_QUEUE_URL: metadataQueue.queueUrl
+          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
         }
       }
-    );
-
-    const queueTriggeredMetadataWriterLambda = new lambda.Function(
-      this,
-      'queueTriggeredMetadataWriterLambda',
-      {
-        runtime: lambda.Runtime.NODEJS_18_X,
-        handler: 'index.handler',
-        code: lambda.Code.fromAsset('src/lambdas/queueMetadataLambda/dist'),
-        role: queueTriggeredMetadataWriterLambdaRole,
-        environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-          METADATA_QUEUE_URL: metadataQueue.queueUrl
-        }
-      }
-    );
-
-    queueTriggeredMetadataWriterLambda.addEventSource(
-      new SqsEventSource(metadataQueue, {
-        batchSize: 1
-      })
     );
 
     // permissions
     queryLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     mutationLambdaRole.attachInlinePolicy(cloudwatchPolicy);
-    queueTriggeredMetadataWriterLambdaRole.attachInlinePolicy(cloudwatchPolicy);
+    geoJsonBucket.grantRead(queryLambdaRole);
 
     geoJsonBucket.grantReadWrite(mutationLambdaRole);
 
     trackMetadataTable.grantReadData(queryResolverLambda);
-    trackMetadataTable.grantReadWriteData(queueTriggeredMetadataWriterLambda);
     trackMetadataTable.grantReadWriteData(mutationResolverLambda);
-
-    metadataQueue.grantSendMessages(mutationResolverLambda);
 
     const userIdDynamoPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -168,20 +132,14 @@ export class CorsaBackendStack extends cdk.Stack {
       resources: [`${trackMetadataTable.tableArn}/UserId`]
     });
 
-    queryLambdaRole.addToPolicy(userIdDynamoPolicy);
+    queryLambdaRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:GetObject'],
+        resources: [geoJsonBucket.bucketArn]
+      })
+    );
 
-    metadataQueue.grant(
-      queueTriggeredMetadataWriterLambda,
-      'sqs:DeleteMessage'
-    );
-    metadataQueue.grant(
-      queueTriggeredMetadataWriterLambda,
-      'sqs:GetQueueAttributes'
-    );
-    metadataQueue.grant(
-      queueTriggeredMetadataWriterLambda,
-      'sqs:ReceiveMessage'
-    );
+    queryLambdaRole.addToPolicy(userIdDynamoPolicy);
 
     const queryDataSource = api.addLambdaDataSource(
       'QueryDataSource',
@@ -205,6 +163,11 @@ export class CorsaBackendStack extends cdk.Stack {
     queryDataSource.createResolver('getPlansByUserId', {
       typeName: 'Query',
       fieldName: 'getPlansByUserId'
+    });
+
+    queryDataSource.createResolver('getGeoJsonBySortKey', {
+      typeName: 'Query',
+      fieldName: 'getGeoJsonBySortKey'
     });
 
     mutationDataSource.createResolver('createPlanFromActivity', {

@@ -9,6 +9,7 @@ type Query {
     token: String!
   ): [Activity]!
   getPlansByUserId(userId: String!): [Plan]
+  getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
 }
 
 type Mutation {
@@ -19,6 +20,27 @@ type Mutation {
     userId: ID!
     planName: String!
   ): CreatedPlan!
+}
+
+type FeatureCollection {
+  features: [Feature!]
+  type: String
+}
+
+type Feature {
+  type: String
+  geometry: Geometry
+}
+
+type Geometry {
+  type: String
+  coordinates: [[Float]]
+  properties: GeoProperties
+}
+
+type GeoProperties {
+  id: Int
+  name: String
 }
 
 type Activity {
@@ -39,8 +61,8 @@ type Plan {
 }
 
 type MileData {
-  elevationGain: Int
-  elevationLoss: Int
+  elevationGain: Int!
+  elevationLoss: Int!
   pace: Int # in seconds per mile
   # elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
 }

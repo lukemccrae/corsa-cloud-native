@@ -2,10 +2,13 @@ import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
-import SQS = require('aws-sdk/clients/sqs');
 import { type CreatedPlan, UpdatedPlan } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  UpdateItemCommand
+} from '@aws-sdk/client-dynamodb';
 
 interface CreatePlanProps {
   activityId: string;
@@ -107,41 +110,46 @@ export const createPlanFromActivity = async (
       Body: JSON.stringify(geoJsonWithMileData)
     };
 
-    const s3result = s3.putObject(bucketParams, (err: Error, data: any) => {
+    s3.putObject(bucketParams, (err: Error, data: any) => {
       if (err instanceof Error) {
         console.error('Error uploading to S3:', err);
         throw new Error(`Error uploading to S3: ${err.message}`);
+        return { success: false };
       }
       console.log('File uploaded to S3:', data);
     });
-    console.log(s3result, '<< s3result');
-    const { Key } = bucketParams;
 
-    const sqs = new SQS();
-
-    const queueParams = {
-      QueueUrl: process.env.METADATA_QUEUE_URL as string, // casting because we checked for undefined earlier
-      MessageBody: JSON.stringify({
-        Key,
-        userId,
-        planName,
-        startTime,
-        mileData,
-        paces
-      }) // SQS body is limited to 256KB
+    const mileDataAttribute = {
+      L: mileData.map((dataItem) => ({
+        M: {
+          elevationGain: { N: dataItem.elevationGain.toString() },
+          elevationLoss: { N: dataItem.elevationLoss.toString() }
+        }
+      }))
     };
 
-    const sqsresult = sqs.sendMessage(queueParams, (err: Error, data: any) => {
-      if (err instanceof Error) {
-        console.log('Error sending to SQS:', err);
-        throw new Error(`Error sending to SQS: ${err.message}`);
+    const { Key } = bucketParams;
+
+    const command = new PutItemCommand({
+      TableName: process.env.DYNAMODB_TABLE_NAME,
+      Item: {
+        BucketKey: { S: Key },
+        UserId: { S: userId },
+        Name: { S: planName },
+        StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
+        MileData: mileDataAttribute,
+        Paces: { L: paces.map((item) => ({ N: String(item) })) }
       }
-      console.log('Message sent to SQS:', data);
     });
-    console.log(sqsresult, '<< sqsresult');
-    return { success: true };
+
+    const dynamoresponse = await client.send(command);
+
+    if (dynamoresponse.$metadata.httpStatusCode?.valueOf() === 200) {
+      return { success: true };
+    }
+    return { success: false };
   } catch (e) {
-    console.log(e, '<< error');
+    console.log(e, 'Error');
     return { success: false };
   }
 };

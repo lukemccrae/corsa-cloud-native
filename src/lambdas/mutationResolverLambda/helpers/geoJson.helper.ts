@@ -1,21 +1,6 @@
+import { Altitude, Feature, LatLng, LatLngAltitude } from '../../types';
 import { calculateDistance } from './haversine.helper';
 import haversine from 'haversine';
-
-type LatLng = [number, number];
-type Altitude = [number];
-type LatLngAltitude = [number, number, number];
-
-interface Feature {
-  type: string;
-  geometry: {
-    type: string;
-    coordinates: LatLngAltitude[];
-  };
-  properties: {
-    id: number;
-    name: string;
-  };
-}
 
 // Create an array of GeoJSON Point features
 export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
