@@ -8,7 +8,7 @@ type Query {
     dateTo: Int!
     token: String!
   ): [Activity]!
-  getPlansByUserId(userId: String!): [Plan]
+  getPlansByUserId(userId: ID!): [Plan]
   getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
 }
 

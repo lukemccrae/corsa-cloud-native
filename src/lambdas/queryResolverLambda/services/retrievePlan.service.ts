@@ -62,10 +62,13 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
       startTime: plan.StartTime.N,
       mileData: plan.MileData.L.map((data, i) => {
         return {
-          elevationGain: data.M.elevationGain.N,
-          elevationLoss: data.M.elevationLoss.N,
-          // type cast to attibute value so we can access the N field
-          pace: plan.Paces.L[i].N
+          elevationGain: Math.round(
+            parseFloat(data.M.elevationGain.N.toString())
+          ),
+          elevationLoss: Math.round(
+            parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
+          ),
+          pace: parseFloat(plan.Paces.L[i].N.toString()) // Ns are string in the DB...
         };
       })
     }));

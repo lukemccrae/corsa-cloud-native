@@ -9,6 +9,7 @@ import {
   PutItemCommand,
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
+import { mockActivityStream } from '../mockActivityStream';
 
 interface CreatePlanProps {
   activityId: string;
@@ -86,14 +87,17 @@ export const createPlanFromActivity = async (
     // to run this locally use this mock
     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
-    const geoJson = makeGeoJson(
+    const { milePointers, featureCollection } = makeGeoJson(
       latLngAltitudeStream.latlng.data,
       latLngAltitudeStream.altitude.data
     );
 
     // this could be refactored into makeGeoJson
     // leaving it separate because makeGeoJson is MESSY
-    const { geoJsonWithMileData, mileData, paces } = makeMileData(geoJson);
+    const { geoJsonWithMileData } = makeMileData(
+      featureCollection,
+      milePointers
+    );
 
     const s3 = new S3({ region: 'us-east-1' });
 
@@ -120,12 +124,14 @@ export const createPlanFromActivity = async (
     });
 
     const mileDataAttribute = {
-      L: mileData.map((dataItem) => ({
-        M: {
-          elevationGain: { N: dataItem.elevationGain.toString() },
-          elevationLoss: { N: dataItem.elevationLoss.toString() }
-        }
-      }))
+      L: geoJsonWithMileData.features[0].properties.mileData.map(
+        (dataItem) => ({
+          M: {
+            elevationGain: { N: dataItem.elevationGain.toString() },
+            elevationLoss: { N: dataItem.elevationLoss.toString() }
+          }
+        })
+      )
     };
 
     const { Key } = bucketParams;
@@ -138,7 +144,11 @@ export const createPlanFromActivity = async (
         Name: { S: planName },
         StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
         MileData: mileDataAttribute,
-        Paces: { L: paces.map((item) => ({ N: String(item) })) }
+        Paces: {
+          L: geoJsonWithMileData.features[0].properties.mileData.map(() => ({
+            N: String(540)
+          }))
+        } //540 for every pace
       }
     });
 

@@ -131,7 +131,7 @@ export type QueryGetGeoJsonBySortKeyArgs = {
 
 
 export type QueryGetPlansByUserIdArgs = {
-  userId: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 export type UpdatedPlan = {

@@ -1,34 +1,48 @@
 import { GeoJSONFeatureCollection } from '../customTypes';
 import { MileData } from '../types';
 
-export const makeMileData = (geoJson: GeoJSONFeatureCollection) => {
-  let gain = 0;
-  let loss = 0;
+export const makeMileData = (
+  geoJson: GeoJSONFeatureCollection,
+  milePointers: number[]
+) => {
+  let elevationGain = 0;
+  let elevationLoss = 0;
+
+  let milePointer = 1;
 
   let geoJsonWithMileData = geoJson;
 
   const mileData: MileData[] = [];
-  const paces: number[] = [];
-  // for each mile...
-  geoJsonWithMileData.features.forEach((mile, mileIndex) => {
-    // calculate the cumulative elevation gain/loss
-    // add gain/loss values to the geoJSON properties
-    const milePoints = mile.geometry.coordinates;
-    for (let i = 1; i < milePoints.length; i++) {
-      // vert diff between points
-      let rise = milePoints[i][2] - milePoints[i - 1][2];
-      if (rise > 0) gain += rise;
-      if (rise < 0) loss += rise;
+
+  // calculate the cumulative elevation gain/loss
+  // add gain/loss values to the geoJSON properties
+  const points = geoJson.features[0].geometry.coordinates;
+
+  for (let i = 1; i < points.length; i++) {
+    // vert diff between points
+    let rise = points[i][2] - points[i - 1][2];
+    if (rise > 0) elevationGain += rise;
+    if (rise < 0) elevationLoss += rise;
+
+    // if we are on the next mile,
+    if (i === milePointers[milePointer]) {
+      milePointer++;
+
+      mileData.push({
+        elevationGain,
+        elevationLoss
+      });
+      elevationGain = 0;
+      elevationLoss = 0;
     }
-    geoJsonWithMileData.features[mileIndex].properties.gain = Math.round(gain);
-    geoJsonWithMileData.features[mileIndex].properties.loss = Math.round(loss);
+  }
 
-    mileData.push({
-      elevationGain: Math.round(gain),
-      elevationLoss: Math.round(loss)
-    });
+  geoJsonWithMileData.features[0].properties.mileData = mileData;
 
-    paces.push(540);
-  });
-  return { geoJsonWithMileData, mileData, paces };
+  // mileData.push({
+  //   elevationGain: Math.round(gain),
+  //   elevationLoss: Math.round(loss)
+  // });
+
+  return { geoJsonWithMileData };
 };

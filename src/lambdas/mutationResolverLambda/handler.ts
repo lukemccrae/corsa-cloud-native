@@ -10,7 +10,6 @@ export const handler = async (event: any, context: any): Promise<any> => {
         case 'createPlanFromActivity':
           return await createPlanFromActivity(event.arguments);
         case 'updatePlanById':
-          console.log(event, '< event');
           return await updatePlanById(event.arguments.planInput);
       }
     }

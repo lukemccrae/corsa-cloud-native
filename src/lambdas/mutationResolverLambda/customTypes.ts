@@ -1,3 +1,5 @@
+import { MileData } from './types';
+
 export interface GeoJSONFeature {
   type: 'Feature';
   geometry: {
@@ -7,8 +9,7 @@ export interface GeoJSONFeature {
   properties: {
     id: number;
     name: string;
-    gain: number;
-    loss: number;
+    mileData: MileData[];
   };
 }
 
