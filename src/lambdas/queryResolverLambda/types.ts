@@ -32,6 +32,7 @@ export type CreatedPlan = {
 export type Feature = {
   __typename?: 'Feature';
   geometry?: Maybe<Geometry>;
+  properties?: Maybe<GeoProperties>;
   type?: Maybe<Scalars['String']['output']>;
 };
 
@@ -44,13 +45,13 @@ export type FeatureCollection = {
 export type GeoProperties = {
   __typename?: 'GeoProperties';
   id?: Maybe<Scalars['Int']['output']>;
+  mileData?: Maybe<Array<Maybe<S3MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
 };
 
 export type Geometry = {
   __typename?: 'Geometry';
   coordinates?: Maybe<Array<Maybe<Array<Maybe<Scalars['Float']['output']>>>>>;
-  properties?: Maybe<GeoProperties>;
   type?: Maybe<Scalars['String']['output']>;
 };
 
@@ -132,6 +133,13 @@ export type QueryGetGeoJsonBySortKeyArgs = {
 
 export type QueryGetPlansByUserIdArgs = {
   userId: Scalars['ID']['input'];
+};
+
+export type S3MileData = {
+  __typename?: 'S3MileData';
+  elevationGain: Scalars['Float']['output'];
+  elevationLoss: Scalars['Float']['output'];
+  index: Scalars['Int']['output'];
 };
 
 export type UpdatedPlan = {
@@ -226,6 +234,7 @@ export type ResolversTypes = {
   Plan: ResolverTypeWrapper<Plan>;
   PlanInput: PlanInput;
   Query: ResolverTypeWrapper<{}>;
+  S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   updatedPlan: ResolverTypeWrapper<UpdatedPlan>;
 };
@@ -248,6 +257,7 @@ export type ResolversParentTypes = {
   Plan: Plan;
   PlanInput: PlanInput;
   Query: {};
+  S3MileData: S3MileData;
   String: Scalars['String']['output'];
   updatedPlan: UpdatedPlan;
 };
@@ -267,6 +277,7 @@ export type CreatedPlanResolvers<ContextType = any, ParentType extends Resolvers
 
 export type FeatureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feature'] = ResolversParentTypes['Feature']> = {
   geometry?: Resolver<Maybe<ResolversTypes['Geometry']>, ParentType, ContextType>;
+  properties?: Resolver<Maybe<ResolversTypes['GeoProperties']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -279,13 +290,13 @@ export type FeatureCollectionResolvers<ContextType = any, ParentType extends Res
 
 export type GeoPropertiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['GeoProperties'] = ResolversParentTypes['GeoProperties']> = {
   id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['S3MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GeometryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Geometry'] = ResolversParentTypes['Geometry']> = {
   coordinates?: Resolver<Maybe<Array<Maybe<Array<Maybe<ResolversTypes['Float']>>>>>, ParentType, ContextType>;
-  properties?: Resolver<Maybe<ResolversTypes['GeoProperties']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -318,6 +329,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
 };
 
+export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['S3MileData'] = ResolversParentTypes['S3MileData']> = {
+  elevationGain?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  elevationLoss?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UpdatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['updatedPlan'] = ResolversParentTypes['updatedPlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -334,6 +352,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  S3MileData?: S3MileDataResolvers<ContextType>;
   updatedPlan?: UpdatedPlanResolvers<ContextType>;
 };
 

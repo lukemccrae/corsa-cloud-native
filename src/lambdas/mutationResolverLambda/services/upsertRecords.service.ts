@@ -82,21 +82,22 @@ export const createPlanFromActivity = async (
     ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
 
   try {
-    const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
+    // const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
 
     // to run this locally use this mock
-    // const latLngAltitudeStream = JSON.parse(mockActivityStream);
+    const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
-    const { milePointers, featureCollection } = makeGeoJson(
+    const { featureCollection } = makeGeoJson(
       latLngAltitudeStream.latlng.data,
       latLngAltitudeStream.altitude.data
     );
 
     // this could be refactored into makeGeoJson
     // leaving it separate because makeGeoJson is MESSY
-    const { geoJsonWithMileData } = makeMileData(
-      featureCollection,
-      milePointers
+    const { geoJson } = makeMileData(featureCollection);
+    console.log(
+      JSON.stringify(geoJson.features[0].properties.mileData, null, 2),
+      '<< json'
     );
 
     const s3 = new S3({ region: 'us-east-1' });
@@ -111,7 +112,7 @@ export const createPlanFromActivity = async (
     const bucketParams = {
       Bucket: process.env.GEO_JSON_BUCKET_NAME,
       Key: uuidv4(),
-      Body: JSON.stringify(geoJsonWithMileData)
+      Body: JSON.stringify(geoJson)
     };
 
     s3.putObject(bucketParams, (err: Error, data: any) => {
@@ -124,14 +125,12 @@ export const createPlanFromActivity = async (
     });
 
     const mileDataAttribute = {
-      L: geoJsonWithMileData.features[0].properties.mileData.map(
-        (dataItem) => ({
-          M: {
-            elevationGain: { N: dataItem.elevationGain.toString() },
-            elevationLoss: { N: dataItem.elevationLoss.toString() }
-          }
-        })
-      )
+      L: geoJson.features[0].properties.mileData.map((dataItem) => ({
+        M: {
+          elevationGain: { N: dataItem.elevationGain!.toString() },
+          elevationLoss: { N: dataItem.elevationLoss!.toString() }
+        }
+      }))
     };
 
     const { Key } = bucketParams;
@@ -145,7 +144,7 @@ export const createPlanFromActivity = async (
         StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
         MileData: mileDataAttribute,
         Paces: {
-          L: geoJsonWithMileData.features[0].properties.mileData.map(() => ({
+          L: geoJson.features[0].properties.mileData.map(() => ({
             N: String(540)
           }))
         } //540 for every pace

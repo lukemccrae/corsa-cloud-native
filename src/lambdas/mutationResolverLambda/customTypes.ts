@@ -1,4 +1,4 @@
-import { MileData } from './types';
+import { MileData, S3MileData } from './types';
 
 export interface GeoJSONFeature {
   type: 'Feature';
@@ -9,7 +9,7 @@ export interface GeoJSONFeature {
   properties: {
     id: number;
     name: string;
-    mileData: MileData[];
+    mileData: S3MileData;
   };
 }
 

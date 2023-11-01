@@ -29,6 +29,7 @@ export const getGeoJsonBySortKey = async (
     const streamString = await response.Body.transformToString('utf-8');
 
     const { features, type } = JSON.parse(streamString);
+    console.log(JSON.stringify(features[0]), '< properties');
 
     return {
       features,

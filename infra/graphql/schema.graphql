@@ -30,17 +30,18 @@ type FeatureCollection {
 type Feature {
   type: String
   geometry: Geometry
+  properties: GeoProperties
 }
 
 type Geometry {
   type: String
   coordinates: [[Float]]
-  properties: GeoProperties
 }
 
 type GeoProperties {
   id: Int
   name: String
+  mileData: [S3MileData]
 }
 
 type Activity {
@@ -58,6 +59,12 @@ type Plan {
   name: String
   startTime: Int # start time of the event
   mileData: [MileData] # an array of mile information
+}
+
+type S3MileData {
+  elevationGain: Float!
+  elevationLoss: Float!
+  index: Int! # starting index for this mile in the coordinates
 }
 
 type MileData {

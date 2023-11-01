@@ -11,8 +11,15 @@ export interface Feature {
   properties: {
     id: number;
     name: string;
+    mileData: S3MileData[];
   };
 }
+
+export type S3MileData = {
+  index: number;
+  elevationGain?: number;
+  elevationLoss?: number;
+};
 
 export interface FeatureCollection {
   type: string;
