@@ -10,6 +10,7 @@ import {
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { mockActivityStream } from '../mockActivityStream';
+import { makeProfilePoints } from '../helpers/vertProfile.helper';
 
 interface CreatePlanProps {
   activityId: string;
@@ -82,23 +83,19 @@ export const createPlanFromActivity = async (
     ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
 
   try {
-    // const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
+    const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
 
     // to run this locally use this mock
-    const latLngAltitudeStream = JSON.parse(mockActivityStream);
+    // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
     const { featureCollection } = makeGeoJson(
       latLngAltitudeStream.latlng.data,
       latLngAltitudeStream.altitude.data
     );
 
-    // this could be refactored into makeGeoJson
-    // leaving it separate because makeGeoJson is MESSY
     const { geoJson } = makeMileData(featureCollection);
-    console.log(
-      JSON.stringify(geoJson.features[0].properties.mileData, null, 2),
-      '<< json'
-    );
+
+    const { pointsPerMile } = makeProfilePoints({ geoJson });
 
     const s3 = new S3({ region: 'us-east-1' });
 
@@ -125,10 +122,15 @@ export const createPlanFromActivity = async (
     });
 
     const mileDataAttribute = {
-      L: geoJson.features[0].properties.mileData.map((dataItem) => ({
+      L: geoJson.features[0].properties.mileData.map((dataItem, i) => ({
         M: {
           elevationGain: { N: dataItem.elevationGain!.toString() },
-          elevationLoss: { N: dataItem.elevationLoss!.toString() }
+          elevationLoss: { N: dataItem.elevationLoss!.toString() },
+          gainProfile: {
+            L: pointsPerMile[i].map((value) => ({
+              N: value.toString()
+            }))
+          }
         }
       }))
     };

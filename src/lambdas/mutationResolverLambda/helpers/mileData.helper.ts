@@ -18,7 +18,7 @@ export const makeMileData = (geoJson: FeatureCollection) => {
     }
 
     if (mi < geoJson.features[0].properties.mileData.length) {
-      for (let i = md.index; i < searchLength; i++) {
+      for (let i = md.index + 1; i < searchLength; i++) {
         const point1 = points[i][2];
         const point2 = points[i - 1][2];
         // vert diff between points

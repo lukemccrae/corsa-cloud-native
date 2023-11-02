@@ -1,5 +1,13 @@
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 
+type NumberObject = {
+  N: string;
+};
+
+type NumberArray = {
+  L: NumberObject[];
+};
+
 type dbMileData = {
   M: {
     elevationGain: {
@@ -8,6 +16,7 @@ type dbMileData = {
     elevationLoss: {
       N: Number;
     };
+    gainProfile: NumberArray;
   };
 };
 
@@ -55,6 +64,8 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
 
+    console.log(JSON.stringify(plans));
+
     return plans.map((plan: DbPlan) => ({
       id: plan.BucketKey.S,
       userId: plan.UserId.S,
@@ -68,6 +79,7 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
           elevationLoss: Math.round(
             parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
           ),
+          mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
           pace: parseFloat(plan.Paces.L[i].N.toString()) // Ns are string in the DB...
         };
       })

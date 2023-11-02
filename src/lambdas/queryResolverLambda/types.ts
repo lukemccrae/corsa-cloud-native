@@ -59,6 +59,7 @@ export type MileData = {
   __typename?: 'MileData';
   elevationGain: Scalars['Int']['output'];
   elevationLoss: Scalars['Int']['output'];
+  mileVertProfile?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
   pace?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -304,6 +305,7 @@ export type GeometryResolvers<ContextType = any, ParentType extends ResolversPar
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
   elevationGain?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   elevationLoss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  mileVertProfile?: Resolver<Maybe<Array<Maybe<ResolversTypes['Int']>>>, ParentType, ContextType>;
   pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
