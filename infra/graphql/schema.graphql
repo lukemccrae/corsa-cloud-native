@@ -13,7 +13,7 @@ type Query {
 }
 
 type Mutation {
-  updatePlanById(planInput: PlanInput!): Plan! # do next
+  updatePlanById(planInput: PlanInput!): UpdatedPlan! # do next
   createPlanFromActivity(
     activityId: ID!
     token: String!
@@ -71,14 +71,14 @@ type MileData {
   elevationGain: Int!
   elevationLoss: Int!
   pace: Int # in seconds per mile
-  # elevationProfile: [Int] # a profile of the mile's elevation, 20 points representing the elevation every 5% of the activity
+  mileVertProfile: [Int]
 }
 
 type CreatedPlan {
   success: Boolean!
 }
 
-type updatedPlan {
+type UpdatedPlan {
   success: Boolean!
 }
 

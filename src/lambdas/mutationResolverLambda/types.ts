@@ -70,7 +70,7 @@ export type MileDataInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createPlanFromActivity: CreatedPlan;
-  updatePlanById: Plan;
+  updatePlanById: UpdatedPlan;
 };
 
 
@@ -144,7 +144,7 @@ export type S3MileData = {
 };
 
 export type UpdatedPlan = {
-  __typename?: 'updatedPlan';
+  __typename?: 'UpdatedPlan';
   success: Scalars['Boolean']['output'];
 };
 
@@ -237,7 +237,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
-  updatedPlan: ResolverTypeWrapper<UpdatedPlan>;
+  UpdatedPlan: ResolverTypeWrapper<UpdatedPlan>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -260,7 +260,7 @@ export type ResolversParentTypes = {
   Query: {};
   S3MileData: S3MileData;
   String: Scalars['String']['output'];
-  updatedPlan: UpdatedPlan;
+  UpdatedPlan: UpdatedPlan;
 };
 
 export type ActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
@@ -312,7 +312,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
-  updatePlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
+  updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
@@ -338,7 +338,7 @@ export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UpdatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['updatedPlan'] = ResolversParentTypes['updatedPlan']> = {
+export type UpdatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdatedPlan'] = ResolversParentTypes['UpdatedPlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -355,6 +355,6 @@ export type Resolvers<ContextType = any> = {
   Plan?: PlanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   S3MileData?: S3MileDataResolvers<ContextType>;
-  updatedPlan?: UpdatedPlanResolvers<ContextType>;
+  UpdatedPlan?: UpdatedPlanResolvers<ContextType>;
 };
 

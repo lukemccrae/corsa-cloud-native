@@ -34,6 +34,7 @@ const client = new DynamoDBClient({ region: 'us-east-1' });
 export const updatePlanById = async (
   planInputArgs: UpdatePlanProps
 ): Promise<UpdatedPlan> => {
+  console.log(planInputArgs, '<< planInputArgs');
   const { startTime, userId, planName, sortKey, paces } = planInputArgs;
 
   const command = new UpdateItemCommand({
@@ -61,7 +62,6 @@ export const updatePlanById = async (
 
   try {
     const response = await client.send(command);
-    console.log(response, '<< response');
     if (response.$metadata.httpStatusCode === 200)
       return {
         success: true
