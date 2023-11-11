@@ -13,7 +13,7 @@
     "deploy": "yarn graphql-schema-linter && yarn codegen && sh ./build_lambdas.sh && yarn cdk deploy --profile lukemccrae"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "5.0.0",
+    "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/typescript": "4.0.1",
     "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@types/geojson": "^7946.0.11",

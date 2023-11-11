@@ -24,6 +24,7 @@ export const getGeoJsonBySortKey = async (
   });
 
   const response = await s3Client.send(command);
+  console.log(response, '<< res');
 
   if (response.Body) {
     const streamString = await response.Body.transformToString('utf-8');

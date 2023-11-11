@@ -14,7 +14,8 @@ export const makeMileData = (geoJson: FeatureCollection) => {
       searchLength = geoJson.features[0].properties.mileData[mi + 1].index;
       // or the length of points for the last mile
     } else {
-      searchLength = points.length;
+      // -5 because some edge cases where search length is too long
+      searchLength = points.length - 5;
     }
 
     if (mi < geoJson.features[0].properties.mileData.length) {

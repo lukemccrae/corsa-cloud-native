@@ -1,6 +1,7 @@
 import {
   updatePlanById,
-  createPlanFromActivity
+  createPlanFromActivity,
+  createPlanFromGpx
 } from './services/upsertRecords.service';
 
 export const handler = async (event: any, context: any): Promise<any> => {
@@ -11,6 +12,8 @@ export const handler = async (event: any, context: any): Promise<any> => {
           return await createPlanFromActivity(event.arguments);
         case 'updatePlanById':
           return await updatePlanById(event.arguments.planInput);
+        case 'createPlanFromGpx':
+          return await createPlanFromGpx(event.arguments.planInput);
       }
     }
   } catch (e) {

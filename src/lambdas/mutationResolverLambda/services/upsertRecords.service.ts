@@ -11,6 +11,8 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { mockActivityStream } from '../mockActivityStream';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
+import { addPacesToMileData } from '../helpers/paces.helper';
+import { ActivityStreamData, Altitude, LatLng } from '../../types';
 
 interface CreatePlanProps {
   activityId: string;
@@ -27,6 +29,10 @@ interface UpdatePlanProps {
   startTime: number;
   planName: string;
   paces: number[];
+}
+
+interface CreatePlanFromGpxArgs {
+  gpx: string;
 }
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
@@ -75,22 +81,32 @@ export const updatePlanById = async (
   }
 };
 
+export const createPlanFromGpx = async (
+  args: CreatePlanFromGpxArgs
+): Promise<CreatedPlan> => {
+  console.log(args, '<< args');
+  return { success: false };
+};
+
 export const createPlanFromActivity = async (
   props: CreatePlanProps
 ): Promise<CreatedPlan> => {
-  const { token, userId, planName, startTime } = props;
+  const { token, userId, planName } = props;
   const url = `https://www.strava.com/api/v3/activities/
-    ${props.activityId}/streams?keys=latlng,altitude&key_by_type=true`;
+    ${props.activityId}/streams?keys=latlng,time,altitude&key_by_type=true`;
 
   try {
-    const latLngAltitudeStream = await stravaGetHttpClient({ token, url });
+    const latLngAltitudeTimeStream: ActivityStreamData =
+      await stravaGetHttpClient({ token, url });
+    console.log(JSON.stringify(latLngAltitudeTimeStream), '<< stream');
 
     // to run this locally use this mock
     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
     const { featureCollection } = makeGeoJson(
-      latLngAltitudeStream.latlng.data,
-      latLngAltitudeStream.altitude.data
+      // These casts could be folly
+      latLngAltitudeTimeStream.latlng.data as [LatLng],
+      latLngAltitudeTimeStream.altitude.data as Altitude
     );
 
     const { geoJson } = makeMileData(featureCollection);
@@ -106,13 +122,17 @@ export const createPlanFromActivity = async (
       throw new Error('S3 bucket name not provided');
     }
 
+    const uuid = uuidv4();
+
     const bucketParams = {
       Bucket: process.env.GEO_JSON_BUCKET_NAME,
-      Key: uuidv4(),
+      Key: uuid,
       Body: JSON.stringify(geoJson)
     };
 
-    s3.putObject(bucketParams, (err: Error, data: any) => {
+    console.log(bucketParams, '<< bucketParams');
+
+    const s3res = s3.putObject(bucketParams, (err: Error, data: any) => {
       if (err instanceof Error) {
         console.error('Error uploading to S3:', err);
         throw new Error(`Error uploading to S3: ${err.message}`);
@@ -135,6 +155,24 @@ export const createPlanFromActivity = async (
       }))
     };
 
+    const generatePacesFromTimeSteam = () => {
+      const paces = geoJson.features[0].properties.mileData.map((m, i) => {
+        return latLngAltitudeTimeStream.time.data[
+          // if i is the last, make it the end of the array
+          i === geoJson.features[0].properties.mileData.length - 1
+            ? latLngAltitudeTimeStream.time.data.length - 1
+            : // otherwise its the next index is the BEGINNING point of the mile and here i need the end
+              geoJson.features[0].properties.mileData[i + 1].index
+        ];
+      });
+
+      return {
+        L: paces.map((p, i) => ({
+          N: String(i === 0 ? p : p - paces[i - 1])
+        }))
+      };
+    };
+
     const { Key } = bucketParams;
 
     const command = new PutItemCommand({
@@ -145,11 +183,7 @@ export const createPlanFromActivity = async (
         Name: { S: planName },
         StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
         MileData: mileDataAttribute,
-        Paces: {
-          L: geoJson.features[0].properties.mileData.map(() => ({
-            N: String(540)
-          }))
-        } //540 for every pace
+        Paces: generatePacesFromTimeSteam()
       }
     });
 

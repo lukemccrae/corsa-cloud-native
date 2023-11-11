@@ -46,7 +46,9 @@ export const makeProfilePoints = (props: MakeProfilePoints) => {
 
     // 20 points representing the relative elevation of the mile point
     for (let j = 1; j < 21; j++) {
-      const point = Math.round(mileArr[Math.ceil(percent * mileArr.length)][2]);
+      const point = Math.round(
+        mileArr[Math.floor(percent * mileArr.length)][2]
+      );
 
       // set min to point for the first point to solve less than 0 case
       if (j === 1) {
@@ -57,7 +59,7 @@ export const makeProfilePoints = (props: MakeProfilePoints) => {
       if (point < min) min = point;
 
       mileProfile.push(point);
-      percent += 0.05;
+      percent += 0.045;
     }
 
     pointsPerMile.push(equalizeProfile(mileProfile, min, max));
