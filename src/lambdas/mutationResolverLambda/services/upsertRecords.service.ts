@@ -130,16 +130,18 @@ export const createPlanFromActivity = async (
       Body: JSON.stringify(geoJson)
     };
 
-    console.log(bucketParams, '<< bucketParams');
-
-    const s3res = s3.putObject(bucketParams, (err: Error, data: any) => {
-      if (err instanceof Error) {
-        console.error('Error uploading to S3:', err);
-        throw new Error(`Error uploading to S3: ${err.message}`);
-        return { success: false };
+    async function uploadToS3(
+      bucketParams: S3.PutObjectRequest
+    ): Promise<void> {
+      try {
+        const data = await s3.putObject(bucketParams).promise();
+        console.log('File uploaded to S3:', data);
+      } catch (error) {
+        console.error('Error uploading to S3:', error);
       }
-      console.log('File uploaded to S3:', data);
-    });
+    }
+
+    await uploadToS3(bucketParams);
 
     const mileDataAttribute = {
       L: geoJson.features[0].properties.mileData.map((dataItem, i) => ({
@@ -181,7 +183,7 @@ export const createPlanFromActivity = async (
         BucketKey: { S: Key },
         UserId: { S: userId },
         Name: { S: planName },
-        StartTime: { N: String(25200) }, //7am base start. dynamo requires numbers to be passed as strings
+        StartTime: { N: String(0) }, //7am base start. dynamo requires numbers to be passed as strings
         MileData: mileDataAttribute,
         Paces: generatePacesFromTimeSteam()
       }

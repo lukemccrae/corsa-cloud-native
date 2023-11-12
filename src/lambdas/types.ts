@@ -1,5 +1,5 @@
 export type LatLng = [number, number];
-export type Altitude = [number];
+export type Altitude = number[];
 export type LatLngAltitude = [number, number, number];
 
 export interface Feature {
@@ -12,6 +12,7 @@ export interface Feature {
     id: number;
     name: string;
     mileData: S3MileData[];
+    lastMileDistance: number;
   };
 }
 

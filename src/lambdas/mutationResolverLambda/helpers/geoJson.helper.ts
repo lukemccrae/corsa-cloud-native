@@ -1,10 +1,9 @@
 import { Altitude, Feature, LatLng, LatLngAltitude } from '../../types';
 // import { calculateDistance } from './haversine.helper';
 import haversine from 'haversine';
-import { calculateDistance } from './haversine.helper';
 
 // Create an array of GeoJSON Point features
-export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
+export const makeGeoJson = (latLng: LatLng[], altitude: Altitude): any => {
   const featureCollection: {
     type: string;
     features: Feature[];
@@ -22,7 +21,8 @@ export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
     properties: {
       id: 1,
       name: 'name',
-      mileData: [{ index: 0 }]
+      mileData: [{ index: 0 }],
+      lastMileDistance: 0
     }
   };
 
@@ -31,6 +31,8 @@ export const makeGeoJson = (latLng: [LatLng], altitude: Altitude): any => {
   for (let i = 0; i < latLng.length; i++) {
     // early return
     if (i === latLng.length - 2) {
+      feature.properties.lastMileDistance =
+        Math.round((distance / 5280) * 100) / 100;
       featureCollection.features.push(feature);
       return { featureCollection };
     }

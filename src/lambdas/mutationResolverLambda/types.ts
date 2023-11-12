@@ -45,6 +45,7 @@ export type FeatureCollection = {
 export type GeoProperties = {
   __typename?: 'GeoProperties';
   id?: Maybe<Scalars['Int']['output']>;
+  lastMileDistance?: Maybe<Scalars['Float']['output']>;
   mileData?: Maybe<Array<Maybe<S3MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
 };
@@ -70,6 +71,7 @@ export type MileDataInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createPlanFromActivity: CreatedPlan;
+  createPlanFromGpx: CreatedPlan;
   updatePlanById: UpdatedPlan;
 };
 
@@ -79,6 +81,11 @@ export type MutationCreatePlanFromActivityArgs = {
   planName: Scalars['String']['input'];
   token: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationCreatePlanFromGpxArgs = {
+  gpx: Scalars['String']['input'];
 };
 
 
@@ -291,6 +298,7 @@ export type FeatureCollectionResolvers<ContextType = any, ParentType extends Res
 
 export type GeoPropertiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['GeoProperties'] = ResolversParentTypes['GeoProperties']> = {
   id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  lastMileDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['S3MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -312,6 +320,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
+  createPlanFromGpx?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGpxArgs, 'gpx'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
