@@ -81,9 +81,7 @@ export const updatePlanById = async (
   }
 };
 
-export const createPlanFromGpx = async (
-  args: CreatePlanFromGpxArgs
-): Promise<CreatedPlan> => {
+export const createPlanFromGpx = (args: CreatePlanFromGpxArgs): CreatedPlan => {
   console.log(args, '<< args');
   return { success: false };
 };
@@ -98,7 +96,6 @@ export const createPlanFromActivity = async (
   try {
     const latLngAltitudeTimeStream: ActivityStreamData =
       await stravaGetHttpClient({ token, url });
-    console.log(JSON.stringify(latLngAltitudeTimeStream), '<< stream');
 
     // to run this locally use this mock
     // const latLngAltitudeStream = JSON.parse(mockActivityStream);

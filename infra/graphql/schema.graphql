@@ -21,6 +21,7 @@ type Mutation {
     planName: String!
   ): CreatedPlan!
   createPlanFromGpx(gpx: String!): CreatedPlan!
+  deletePlanById(bucketKey: ID!, userId: Int!): DeletePlan!
 }
 
 type FeatureCollection {
@@ -43,6 +44,7 @@ type GeoProperties {
   id: Int
   name: String
   mileData: [S3MileData]
+  lastMileDistance: Float
 }
 
 type Activity {
@@ -80,6 +82,10 @@ type CreatedPlan {
 }
 
 type UpdatedPlan {
+  success: Boolean!
+}
+
+type DeletePlan {
   success: Boolean!
 }
 

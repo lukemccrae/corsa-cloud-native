@@ -29,6 +29,11 @@ export type CreatedPlan = {
   success: Scalars['Boolean']['output'];
 };
 
+export type DeletePlan = {
+  __typename?: 'DeletePlan';
+  success: Scalars['Boolean']['output'];
+};
+
 export type Feature = {
   __typename?: 'Feature';
   geometry?: Maybe<Geometry>;
@@ -72,6 +77,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPlanFromActivity: CreatedPlan;
   createPlanFromGpx: CreatedPlan;
+  deletePlanById: DeletePlan;
   updatePlanById: UpdatedPlan;
 };
 
@@ -86,6 +92,12 @@ export type MutationCreatePlanFromActivityArgs = {
 
 export type MutationCreatePlanFromGpxArgs = {
   gpx: Scalars['String']['input'];
+};
+
+
+export type MutationDeletePlanByIdArgs = {
+  bucketKey: Scalars['ID']['input'];
+  userId: Scalars['Int']['input'];
 };
 
 
@@ -229,6 +241,7 @@ export type ResolversTypes = {
   Activity: ResolverTypeWrapper<Activity>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
+  DeletePlan: ResolverTypeWrapper<DeletePlan>;
   Feature: ResolverTypeWrapper<Feature>;
   FeatureCollection: ResolverTypeWrapper<FeatureCollection>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
@@ -252,6 +265,7 @@ export type ResolversParentTypes = {
   Activity: Activity;
   Boolean: Scalars['Boolean']['output'];
   CreatedPlan: CreatedPlan;
+  DeletePlan: DeletePlan;
   Feature: Feature;
   FeatureCollection: FeatureCollection;
   Float: Scalars['Float']['output'];
@@ -279,6 +293,11 @@ export type ActivityResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type CreatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatedPlan'] = ResolversParentTypes['CreatedPlan']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type DeletePlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeletePlan'] = ResolversParentTypes['DeletePlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -321,6 +340,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
   createPlanFromGpx?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGpxArgs, 'gpx'>>;
+  deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
@@ -355,6 +375,7 @@ export type UpdatedPlanResolvers<ContextType = any, ParentType extends Resolvers
 export type Resolvers<ContextType = any> = {
   Activity?: ActivityResolvers<ContextType>;
   CreatedPlan?: CreatedPlanResolvers<ContextType>;
+  DeletePlan?: DeletePlanResolvers<ContextType>;
   Feature?: FeatureResolvers<ContextType>;
   FeatureCollection?: FeatureCollectionResolvers<ContextType>;
   GeoProperties?: GeoPropertiesResolvers<ContextType>;

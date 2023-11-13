@@ -175,6 +175,16 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'createPlanFromActivity'
     });
 
+    mutationDataSource.createResolver('deletePlanById', {
+      typeName: 'Mutation',
+      fieldName: 'deletePlanById'
+    });
+
+    mutationDataSource.createResolver('createPlanFromGpx', {
+      typeName: 'Mutation',
+      fieldName: 'createPlanFromGpx'
+    });
+
     mutationDataSource.createResolver('updatePlanById', {
       typeName: 'Mutation',
       fieldName: 'updatePlanById'

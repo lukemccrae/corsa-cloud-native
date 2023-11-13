@@ -1,3 +1,4 @@
+import { deletePlanById } from './services/deletePlan.service';
 import {
   updatePlanById,
   createPlanFromActivity,
@@ -5,6 +6,7 @@ import {
 } from './services/upsertRecords.service';
 
 export const handler = async (event: any, context: any): Promise<any> => {
+  console.log(event, '<< event');
   try {
     if (event.info.parentTypeName === 'Mutation') {
       switch (event.info.fieldName) {
@@ -13,7 +15,9 @@ export const handler = async (event: any, context: any): Promise<any> => {
         case 'updatePlanById':
           return await updatePlanById(event.arguments.planInput);
         case 'createPlanFromGpx':
-          return await createPlanFromGpx(event.arguments.planInput);
+          return createPlanFromGpx(event.arguments.planInput);
+        case 'deletePlanById':
+          return await deletePlanById(event.arguments);
       }
     }
   } catch (e) {

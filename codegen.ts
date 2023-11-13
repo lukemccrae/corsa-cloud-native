@@ -9,9 +9,6 @@ const config: CodegenConfig = {
     },
     'src/lambdas/mutationResolverLambda/types.ts': {
       plugins: ['typescript', 'typescript-resolvers']
-    },
-    'src/lambdas/queueMetadataLambda/types.ts': {
-      plugins: ['typescript', 'typescript-resolvers']
     }
   }
 };
