@@ -1,8 +1,8 @@
 import { MileData } from '../../../types';
-import { FeatureCollection } from '../../types';
+import { FeatureCollectionBAD } from '../../types';
 
 interface MakeProfilePoints {
-  geoJson: FeatureCollection;
+  geoJson: FeatureCollectionBAD;
 }
 
 //make each point relative to the min / max as a percentage

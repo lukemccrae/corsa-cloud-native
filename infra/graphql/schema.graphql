@@ -20,7 +20,7 @@ type Mutation {
     userId: ID!
     planName: String!
   ): CreatedPlan!
-  createPlanFromGpx(gpx: String!): CreatedPlan!
+  createPlanFromGeoJson(geoJsonString: String!, userId: ID!): CreatedPlan!
   deletePlanById(bucketKey: ID!, userId: Int!): DeletePlan!
 }
 
@@ -30,8 +30,8 @@ type FeatureCollection {
 }
 
 type Feature {
-  type: String
-  geometry: Geometry
+  type: String!
+  geometry: Geometry!
   properties: GeoProperties
 }
 

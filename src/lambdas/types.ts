@@ -9,6 +9,7 @@ export interface Feature {
     coordinates: LatLngAltitude[];
   };
   properties: {
+    coordTimes: string[];
     id: number;
     name: string;
     mileData: S3MileData[];
@@ -22,7 +23,8 @@ export type S3MileData = {
   elevationLoss?: number;
 };
 
-export interface FeatureCollection {
+// TODO: USE TYPES GENERATED FROM GRAPHQL NOT THIS
+export interface FeatureCollectionBAD {
   type: string;
   features: Feature[];
 }

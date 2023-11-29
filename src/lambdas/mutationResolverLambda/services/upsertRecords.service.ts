@@ -2,9 +2,10 @@ import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
-import { type CreatedPlan, UpdatedPlan } from '../types';
+import { type CreatedPlan, UpdatedPlan, FeatureCollection } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  AttributeValue,
   DynamoDBClient,
   PutItemCommand,
   UpdateItemCommand
@@ -12,7 +13,13 @@ import {
 import { mockActivityStream } from '../mockActivityStream';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
 import { addPacesToMileData } from '../helpers/paces.helper';
-import { ActivityStreamData, Altitude, LatLng } from '../../types';
+import {
+  ActivityStreamData,
+  Altitude,
+  FeatureCollectionBAD,
+  LatLng
+} from '../../types';
+import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 
 interface CreatePlanProps {
   activityId: string;
@@ -31,8 +38,9 @@ interface UpdatePlanProps {
   paces: number[];
 }
 
-interface CreatePlanFromGpxArgs {
-  gpx: string;
+interface createPlanFromGeoJsonArgs {
+  geoJsonString: string;
+  userId: string;
 }
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
@@ -81,9 +89,69 @@ export const updatePlanById = async (
   }
 };
 
-export const createPlanFromGpx = (args: CreatePlanFromGpxArgs): CreatedPlan => {
-  console.log(args, '<< args');
-  return { success: false };
+export const createPlanFromGeoJson = async (
+  args: createPlanFromGeoJsonArgs
+): Promise<CreatedPlan> => {
+  // ): Promise<void> => {
+  const featureCollection: FeatureCollectionBAD = JSON.parse(
+    args.geoJsonString
+  );
+
+  const planName = featureCollection.features[0].properties.name;
+  const userId = args.userId;
+
+  // TODO: These functions are using '../../types'
+  // which is a type file i made
+  // IT IS WRONG
+  // I should be using the types generated from the schema in '../types'
+  const geoJsonWithMileIndices = makeMileIndices(featureCollection);
+
+  const { geoJson } = makeMileData(geoJsonWithMileIndices);
+
+  const generatePacesFromGeoJson = () => {
+    const feature = geoJson.features[0];
+    const paces = feature.properties.mileData.map((m, i) => {
+      const timeInSeconds =
+        Date.parse(
+          // annoying indexing here because mileData stores the
+          //  BEGINNING point of the mile and here i need the end
+          feature.properties.coordTimes[
+            // if i is the last, make it the end of the array
+            i === feature.properties.mileData.length - 1
+              ? feature.properties.coordTimes.length - 1
+              : // otherwise its the next, since mileData[0].index is 0
+                feature.properties.mileData[i + 1].index
+          ]
+        ) / 1000;
+      return timeInSeconds;
+    });
+
+    const startTime =
+      Date.parse(geoJson.features[0].properties.coordTimes[0]) / 1000;
+
+    const returnPaces = {
+      L: paces.map((p, i) => ({
+        N: String(
+          // if we are at the beginning give the pace back minus start time
+          i === 0
+            ? p - startTime
+            : // otherwise subtract the previous mile time to get the split of the current mile
+              p - paces[i - 1]
+        )
+      }))
+    };
+
+    return returnPaces;
+  };
+
+  generatePacesFromGeoJson();
+
+  return await uploadPlan(
+    geoJson,
+    generatePacesFromGeoJson(),
+    userId,
+    planName
+  );
 };
 
 export const createPlanFromActivity = async (
@@ -100,6 +168,7 @@ export const createPlanFromActivity = async (
     // to run this locally use this mock
     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
 
+    // need to split out mile index code
     const { featureCollection } = makeGeoJson(
       // These casts could be folly
       latLngAltitudeTimeStream.latlng.data as [LatLng],
@@ -108,6 +177,49 @@ export const createPlanFromActivity = async (
 
     const { geoJson } = makeMileData(featureCollection);
 
+    const generatePacesFromTimeSteam = () => {
+      const paces = geoJson.features[0].properties.mileData.map((m, i) => {
+        return latLngAltitudeTimeStream.time.data[
+          // if i is the last, make it the end of the array
+          i === geoJson.features[0].properties.mileData.length - 1
+            ? latLngAltitudeTimeStream.time.data.length - 1
+            : // otherwise its the next. index is the BEGINNING point of the mile and here i need the end
+              geoJson.features[0].properties.mileData[i + 1].index
+        ];
+      });
+
+      const returnPaces = {
+        L: paces.map((p, i) => ({
+          N: String(i === 0 ? p : p - paces[i - 1])
+        }))
+      };
+
+      console.log(returnPaces, '<< returnPaces');
+
+      return returnPaces;
+    };
+
+    console.log(generatePacesFromTimeSteam(), '<< generatePacesFromTimeSteam');
+
+    return await uploadPlan(
+      geoJson,
+      generatePacesFromTimeSteam(),
+      userId,
+      planName
+    );
+  } catch (e) {
+    console.log(e);
+    return { success: false };
+  }
+};
+
+const uploadPlan = async (
+  geoJson: FeatureCollectionBAD,
+  paces: AttributeValue,
+  userId: string,
+  planName: string
+) => {
+  try {
     const { pointsPerMile } = makeProfilePoints({ geoJson });
 
     const s3 = new S3({ region: 'us-east-1' });
@@ -127,6 +239,12 @@ export const createPlanFromActivity = async (
       Body: JSON.stringify(geoJson)
     };
 
+    // I think this flow could be done decoupled
+    // S3 upload could trigger the dynamo write
+    // Dynamo would just need the object ID from s3
+    // Currently how it is makes sense if this is the only upload flow
+    // As I'm building the flow from a GPX file I wish these services were modular
+    // and I didn't have to make totally bespoke paths
     async function uploadToS3(
       bucketParams: S3.PutObjectRequest
     ): Promise<void> {
@@ -154,24 +272,6 @@ export const createPlanFromActivity = async (
       }))
     };
 
-    const generatePacesFromTimeSteam = () => {
-      const paces = geoJson.features[0].properties.mileData.map((m, i) => {
-        return latLngAltitudeTimeStream.time.data[
-          // if i is the last, make it the end of the array
-          i === geoJson.features[0].properties.mileData.length - 1
-            ? latLngAltitudeTimeStream.time.data.length - 1
-            : // otherwise its the next index is the BEGINNING point of the mile and here i need the end
-              geoJson.features[0].properties.mileData[i + 1].index
-        ];
-      });
-
-      return {
-        L: paces.map((p, i) => ({
-          N: String(i === 0 ? p : p - paces[i - 1])
-        }))
-      };
-    };
-
     const { Key } = bucketParams;
 
     const command = new PutItemCommand({
@@ -182,7 +282,7 @@ export const createPlanFromActivity = async (
         Name: { S: planName },
         StartTime: { N: String(0) }, //7am base start. dynamo requires numbers to be passed as strings
         MileData: mileDataAttribute,
-        Paces: generatePacesFromTimeSteam()
+        Paces: paces
       }
     });
 

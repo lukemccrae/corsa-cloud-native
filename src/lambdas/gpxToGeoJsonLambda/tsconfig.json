@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "esNext",
+    "strict": true,
+    "preserveConstEnums": true,
+    "noEmit": false,
+    "sourceMap": false,
+    "module":"CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "esModuleInterop": true, 
+    "rootDir": "../",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true, 
+    "isolatedModules": true, 
+  },
+  "include": ["handler.ts", "services/*", "generated/graphql.d.ts"], 
+  "exclude": ["node_modules"]
+}

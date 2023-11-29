@@ -36,9 +36,9 @@ export type DeletePlan = {
 
 export type Feature = {
   __typename?: 'Feature';
-  geometry?: Maybe<Geometry>;
+  geometry: Geometry;
   properties?: Maybe<GeoProperties>;
-  type?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
 };
 
 export type FeatureCollection = {
@@ -76,7 +76,7 @@ export type MileDataInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createPlanFromActivity: CreatedPlan;
-  createPlanFromGpx: CreatedPlan;
+  createPlanFromGeoJson: CreatedPlan;
   deletePlanById: DeletePlan;
   updatePlanById: UpdatedPlan;
 };
@@ -90,8 +90,9 @@ export type MutationCreatePlanFromActivityArgs = {
 };
 
 
-export type MutationCreatePlanFromGpxArgs = {
-  gpx: Scalars['String']['input'];
+export type MutationCreatePlanFromGeoJsonArgs = {
+  geoJsonString: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -303,9 +304,9 @@ export type DeletePlanResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type FeatureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feature'] = ResolversParentTypes['Feature']> = {
-  geometry?: Resolver<Maybe<ResolversTypes['Geometry']>, ParentType, ContextType>;
+  geometry?: Resolver<ResolversTypes['Geometry'], ParentType, ContextType>;
   properties?: Resolver<Maybe<ResolversTypes['GeoProperties']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -339,7 +340,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
-  createPlanFromGpx?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGpxArgs, 'gpx'>>;
+  createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'geoJsonString' | 'userId'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };

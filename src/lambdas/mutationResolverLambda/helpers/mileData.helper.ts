@@ -1,6 +1,7 @@
-import { FeatureCollection } from '../../types';
+import { FeatureCollectionBAD } from '../../types';
 
-export const makeMileData = (geoJson: FeatureCollection) => {
+export const makeMileData = (geoJson: FeatureCollectionBAD) => {
+  console.log(JSON.stringify(geoJson.features[0]), '<< are these different???');
   // calculate the elevation gain/loss
   // add values to the geoJSON properties
   const points = geoJson.features[0].geometry.coordinates;

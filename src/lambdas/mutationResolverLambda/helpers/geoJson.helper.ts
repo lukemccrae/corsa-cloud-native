@@ -22,7 +22,8 @@ export const makeGeoJson = (latLng: LatLng[], altitude: Altitude): any => {
       id: 1,
       name: 'name',
       mileData: [{ index: 0 }],
-      lastMileDistance: 0
+      lastMileDistance: 0,
+      coordTimes: []
     }
   };
 

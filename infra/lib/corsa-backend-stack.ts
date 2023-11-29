@@ -2,13 +2,11 @@ import * as cdk from 'aws-cdk-lib';
 import * as appsync from 'aws-cdk-lib/aws-appsync';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as apiGateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-// import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { type Construct } from 'constructs';
 import { Duration } from 'aws-cdk-lib';
-import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,6 +23,35 @@ export class CorsaBackendStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING
       }
     });
+
+    const utilityApi = new apiGateway.RestApi(this, 'CorsaUtilityApi', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: [
+          'https://58f8-70-59-19-22.ngrok-free.app',
+          'http://localhost:3000'
+        ],
+        allowMethods: apiGateway.Cors.ALL_METHODS
+      }
+    });
+
+    const utilityLambdaRole = new iam.Role(this, 'UtilityLambdaExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
+    const gpxToGeoJsonLambda = new lambda.Function(this, 'gpxToGeoJsonLambda', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('src/lambdas/gpxToGeoJsonLambda/dist'),
+      role: utilityLambdaRole,
+      timeout: cdk.Duration.seconds(10)
+    });
+
+    const resource = utilityApi.root.addResource('gpx-geojson');
+
+    resource.addMethod(
+      'POST',
+      new apiGateway.LambdaIntegration(gpxToGeoJsonLambda)
+    );
 
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket');
 
@@ -119,6 +146,8 @@ export class CorsaBackendStack extends cdk.Stack {
     // permissions
     queryLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     mutationLambdaRole.attachInlinePolicy(cloudwatchPolicy);
+    utilityLambdaRole.attachInlinePolicy(cloudwatchPolicy);
+
     geoJsonBucket.grantRead(queryLambdaRole);
 
     geoJsonBucket.grantReadWrite(mutationLambdaRole);
@@ -180,9 +209,9 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'deletePlanById'
     });
 
-    mutationDataSource.createResolver('createPlanFromGpx', {
+    mutationDataSource.createResolver('createPlanFromGeoJson', {
       typeName: 'Mutation',
-      fieldName: 'createPlanFromGpx'
+      fieldName: 'createPlanFromGeoJson'
     });
 
     mutationDataSource.createResolver('updatePlanById', {

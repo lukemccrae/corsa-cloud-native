@@ -1,0 +1,21 @@
+{
+  "name": "gpx-resolver",
+  "version": "1.0.0",
+  "license": "",
+  "description": "Description of your Lambda function",
+  "scripts": {
+    "test": "echo \"No tests available\"",
+    "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.454.0",
+    "@mapbox/togeojson": "^0.16.2",
+    "@types/node-fetch": "^2.6.7",
+    "esbuild": "^0.19.3",
+    "xmldom": "^0.6.0"
+  },
+  "devDependencies": {
+    "terser": "^5.20.0",
+    "typescript": "^5.2.2"
+  }
+}

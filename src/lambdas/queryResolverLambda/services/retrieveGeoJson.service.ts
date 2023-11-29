@@ -1,5 +1,5 @@
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { FeatureCollection } from '../../types';
+import { FeatureCollectionBAD } from '../../types';
 type RetrieveGeoJsonProps = {
   sortKey: string;
 };
@@ -8,7 +8,7 @@ const s3Client = new S3Client({ region: 'us-east-1' });
 
 export const getGeoJsonBySortKey = async (
   args: RetrieveGeoJsonProps
-): Promise<FeatureCollection> => {
+): Promise<FeatureCollectionBAD> => {
   const { sortKey } = args;
 
   if (
