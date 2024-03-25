@@ -43,7 +43,7 @@ interface createPlanFromGeoJsonArgs {
   userId: string;
 }
 
-const client = new DynamoDBClient({ region: 'us-east-1' });
+const client = new DynamoDBClient({ region: 'us-west-1' });
 
 export const updatePlanById = async (
   planInputArgs: UpdatePlanProps
@@ -222,7 +222,7 @@ const uploadPlan = async (
   try {
     const { pointsPerMile } = makeProfilePoints({ geoJson });
 
-    const s3 = new S3({ region: 'us-east-1' });
+    const s3 = new S3({ region: 'us-west-1' });
 
     if (
       process.env.GEO_JSON_BUCKET_NAME == null ||

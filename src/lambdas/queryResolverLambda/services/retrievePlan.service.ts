@@ -42,7 +42,7 @@ type DbPlan = {
 };
 
 export const getPlansByUserId = async (args: any): Promise<any> => {
-  const client = new DynamoDBClient({ region: 'us-east-1' });
+  const client = new DynamoDBClient({ region: 'us-west-1' });
 
   const { userId } = args;
 

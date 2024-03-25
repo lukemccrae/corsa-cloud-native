@@ -1,8 +1,8 @@
 import { DynamoDBClient, DeleteItemCommand } from '@aws-sdk/client-dynamodb';
 import S3 = require('aws-sdk/clients/s3');
 
-const client = new DynamoDBClient({ region: 'us-east-1' });
-const s3 = new S3({ region: 'us-east-1' });
+const client = new DynamoDBClient({ region: 'us-west-1' });
+const s3 = new S3({ region: 'us-west-1' });
 
 interface DeletePlanArgs {
   bucketKey: string;
