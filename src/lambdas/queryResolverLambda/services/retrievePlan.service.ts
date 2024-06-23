@@ -39,6 +39,9 @@ type DbPlan = {
   Name: {
     S: String;
   };
+  LastMileDistance: {
+    N: Number;
+  };
 };
 
 export const getPlansByUserId = async (args: any): Promise<any> => {
@@ -82,7 +85,8 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
           mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
           pace: parseFloat(plan.Paces.L[i].N.toString()) // Ns are string in the DB...
         };
-      })
+      }),
+      lastMileDistance: plan.LastMileDistance.N
     }));
   } catch (e) {
     console.log(e, '<< error batch get');

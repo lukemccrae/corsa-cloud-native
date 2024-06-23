@@ -91,14 +91,14 @@ export type MutationCreatePlanFromActivityArgs = {
 
 
 export type MutationCreatePlanFromGeoJsonArgs = {
-  geoJsonString: Scalars['String']['input'];
+  gpxId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
 
 
 export type MutationDeletePlanByIdArgs = {
   bucketKey: Scalars['ID']['input'];
-  userId: Scalars['Int']['input'];
+  userId: Scalars['String']['input'];
 };
 
 
@@ -109,6 +109,7 @@ export type MutationUpdatePlanByIdArgs = {
 export type Plan = {
   __typename?: 'Plan';
   id?: Maybe<Scalars['String']['output']>;
+  lastMileDistance?: Maybe<Scalars['Float']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
   startTime?: Maybe<Scalars['Int']['output']>;
@@ -340,13 +341,14 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
-  createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'geoJsonString' | 'userId'>>;
+  createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastMileDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

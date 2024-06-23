@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "codegen": "graphql-codegen --config codegen.ts",
-    "deploy": "yarn graphql-schema-linter && yarn codegen && sh ./build_lambdas.sh && yarn cdk deploy --profile lukemccrae"
+    "deploy": "yarn graphql-schema-linter && yarn codegen && bash ./build_lambdas.sh && yarn cdk deploy --profile default"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "2.96.2",
+    "aws-sdk": "^2.1602.0",
     "constructs": "^10.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "geojson": "^0.5.0",

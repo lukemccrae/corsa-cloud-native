@@ -7,9 +7,10 @@ cd ./src/lambdas
 
 # Iterate through directories in 'src/lambdas'
 for dir in *; do
-  if [ -d "$dir" ] && [[ "$dir" == *Lambda ]]; then
+  if [ -d "$dir" ] && [[ "$dir" == *Lambda* ]]; then
     echo "Entering directory: $dir"
-    cd "$dir"
+    cd "$dir" || exit
+    yarn
     yarn build
     cd ..
   fi

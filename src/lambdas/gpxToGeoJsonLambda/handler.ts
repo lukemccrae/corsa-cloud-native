@@ -18,7 +18,7 @@ export const handler = async (event: any, context: any): Promise<any> => {
       headers: {
         ContentType: 'application/json',
         // 'Access-Control-Allow-Origin': 'https://58f8-70-59-19-22.ngrok-free.app'
-        'Access-Control-Allow-Origin': 'http://localhost:3000'
+        'Access-Control-Allow-Origin': '*'
       },
       body: geojson
     };

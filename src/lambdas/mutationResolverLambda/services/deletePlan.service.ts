@@ -6,7 +6,7 @@ const s3 = new S3({ region: 'us-west-1' });
 
 interface DeletePlanArgs {
   bucketKey: string;
-  userId: number;
+  userId: string;
 }
 
 export const deletePlanById = async (args: DeletePlanArgs) => {
@@ -29,7 +29,7 @@ export const deletePlanById = async (args: DeletePlanArgs) => {
         S: args.bucketKey
       },
       UserId: {
-        S: String(args.userId)
+        S: args.userId
       }
     },
     TableName: process.env.DYNAMODB_TABLE_NAME

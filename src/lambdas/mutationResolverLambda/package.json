@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.428.0",
+    "@aws-sdk/client-s3": "^3.556.0",
+    "@mapbox/togeojson": "^0.16.2",
     "@types/aws-lambda": "^8.10.122",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1464.0",
     "esbuild": "^0.19.3",
-    "haversine": "^1.1.1"
+    "haversine": "^1.1.1",
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@types/haversine": "^1.1.6",
