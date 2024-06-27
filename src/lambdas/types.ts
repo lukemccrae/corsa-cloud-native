@@ -21,6 +21,7 @@ export type S3MileData = {
   index: number;
   elevationGain?: number;
   elevationLoss?: number;
+  stopTime?: number;
 };
 
 // TODO: USE TYPES GENERATED FROM GRAPHQL NOT THIS

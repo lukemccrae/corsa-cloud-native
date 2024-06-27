@@ -1,12 +1,22 @@
+# Ignore all .js files except jest.config.js
 *.js
 !jest.config.js
+
+# Ignore all .d.ts files
 *.d.ts
+
+# Ignore node_modules directory
 node_modules
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# Ignore .env files
 .env
 
-**/index.js.map
-**/*.map
+# Ignore all .map files
+*.map
+
+# Explicitly exclude index.js.map from being ignored
+!**/index.js.map

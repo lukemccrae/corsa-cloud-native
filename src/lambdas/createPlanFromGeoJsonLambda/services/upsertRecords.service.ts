@@ -10,7 +10,6 @@ import {
   PutItemCommand,
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
-import { mockActivityStream } from '../mockActivityStream';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
 import { addPacesToMileData } from '../helpers/paces.helper';
 import {
@@ -49,6 +48,7 @@ const client = new DynamoDBClient({ region: 'us-west-1' });
 export const createPlanFromGeoJson = async (
   args: createPlanFromGeoJsonArgs
 ): Promise<CreatedPlan> => {
+
   // retrieve gpx from s3 with provided uuid
   const s3Client = new S3Client({ region: 'us-west-1' });
 
@@ -240,7 +240,8 @@ const uploadPlan = async (
               L: pointsPerMile[i].map((value) => ({
                 N: value.toString()
               }))
-            }
+            },
+            stopTime: { N: dataItem.stopTime!.toString() },
           }
         })
       })

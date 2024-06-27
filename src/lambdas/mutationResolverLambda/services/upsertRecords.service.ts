@@ -11,7 +11,6 @@ import {
   PutItemCommand,
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
-import { mockActivityStream } from '../mockActivityStream';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
 import { addPacesToMileData } from '../helpers/paces.helper';
 import {
@@ -22,6 +21,7 @@ import {
 } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 import { gpxToGeoJson } from './gpxGeoJson.service'
+import { json } from '../mockJson'
 
 interface CreatePlanProps {
   activityId: string;
@@ -107,14 +107,12 @@ export const createPlanFromGeoJson = async (
 
   if (!response.Body) throw new Error('Error processing GeoJson');
 
-  // turn retrieved GPX into a geoJSON
   const streamString = await response.Body.transformToString('utf-8');
-  console.log(streamString, '<< streamString')
 
-  const geoJsonString = gpxToGeoJson(streamString)
+  // const geoJsonString = gpxToGeoJson(streamString)
 
-  const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
-  console.log(featureCollection, '<< fc')
+  // console.log(geoJsonString, '<< fc')
+  const featureCollection: FeatureCollectionBAD = JSON.parse(streamString);
 
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
@@ -125,8 +123,9 @@ export const createPlanFromGeoJson = async (
   // I should be using the types generated from the schema in '../types'
   const geoJsonWithMileIndices = makeMileIndices(featureCollection);
 
-  const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
+
+  const { geoJson } = makeMileData(geoJsonWithMileIndices);
   const generatePacesFromGeoJson = () => {
     const feature = geoJson.features[0];
     const paces = feature.properties.mileData.map((m, i) => {
@@ -163,11 +162,11 @@ export const createPlanFromGeoJson = async (
     return returnPaces;
   };
 
-  generatePacesFromGeoJson();
+  const timeInSeconds = generatePacesFromGeoJson();
 
   return await uploadPlan(
     geoJson,
-    generatePacesFromGeoJson(),
+    timeInSeconds,
     userId,
     planName,
     args.gpxId
@@ -241,7 +240,11 @@ const uploadPlan = async (
   gpxId: string
 ) => {
   try {
+    console.log("do i work?")
+
     const { pointsPerMile } = makeProfilePoints({ geoJson });
+    console.log("do i work now?")
+
 
     const s3 = new S3({ region: 'us-west-1' });
 
@@ -286,7 +289,8 @@ const uploadPlan = async (
               L: pointsPerMile[i].map((value) => ({
                 N: value.toString()
               }))
-            }
+            },
+            stopTime: { N: dataItem.stopTime!.toString() },
           }
         })
       })

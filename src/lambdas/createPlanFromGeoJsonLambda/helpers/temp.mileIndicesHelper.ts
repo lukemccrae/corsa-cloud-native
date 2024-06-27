@@ -14,8 +14,10 @@ export const makeMileIndices = (geoJson: FeatureCollectionBAD) => {
     throw new Error('Geometry has no properties');
   if (!geoJson.features[0].type) throw new Error('Geometry has no type');
 
-  const mileData = [{ index: 0, elevationGain: 0, elevationLoss: 0 }];
+  const mileData = [{ index: 0, elevationGain: 0, elevationLoss: 0, stopTime: 0 }];
   const points = geoJson.features[0].geometry.coordinates;
+  const timeStamps = geoJson.features[0].properties.coordTimes;
+
 
   let distance = 0;
 
@@ -25,6 +27,10 @@ export const makeMileIndices = (geoJson: FeatureCollectionBAD) => {
   // the distance is just coming up shor
 
   for (let i = 0; i < points.length - 1; i++) {
+    // calculate time between points
+
+    const time1 = new Date(timeStamps[i]).getTime()
+    const time2 = new Date(timeStamps[i + 1]).getTime()
     let feetBetweenPoints =
       haversine(
         {
@@ -42,15 +48,21 @@ export const makeMileIndices = (geoJson: FeatureCollectionBAD) => {
       ) * 5280;
 
     if (distance >= 5280) {
-      mileData.push({ index: i, elevationGain: 0, elevationLoss: 0 });
+      mileData.push({ index: i, elevationGain: 0, elevationLoss: 0, stopTime: 0 });
       distance = 0;
+
     }
 
     distance += feetBetweenPoints;
+    if (feetBetweenPoints < 1) {
+      console.log(mileData.length - 1, time2 - time1)
+      mileData[mileData.length - 1].stopTime += (time2 - time1) / 1000
+    }
   }
 
   geoJson.features[0].properties.lastMileDistance =
     Math.round((distance / 5280) * 100) / 100;
   geoJson.features[0].properties.mileData = mileData;
+  console.log(mileData)
   return geoJson;
 };

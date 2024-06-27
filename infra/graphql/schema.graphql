@@ -69,6 +69,7 @@ type S3MileData {
   elevationGain: Float!
   elevationLoss: Float!
   index: Int! # starting index for this mile in the coordinates
+  stopTime: Int!
 }
 
 type MileData {
@@ -76,6 +77,7 @@ type MileData {
   elevationLoss: Int!
   pace: Int # in seconds per mile
   mileVertProfile: [Int]
+  stopTime: Int
 }
 
 type CreatedPlan {
