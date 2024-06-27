@@ -17,7 +17,9 @@ type dbMileData = {
       N: Number;
     };
     gainProfile: NumberArray;
-    stopTime: Number;
+    stopTime: {
+      N: string;
+    };
   };
 };
 
@@ -76,6 +78,8 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
       name: plan.Name.S,
       startTime: plan.StartTime.N,
       mileData: plan.MileData.L.map((data, i) => {
+        console.log(JSON.stringify(data), '<< plan')
+
         return {
           elevationGain: Math.round(
             parseFloat(data.M.elevationGain.N.toString())
@@ -85,7 +89,7 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
           ),
           mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
           pace: parseFloat(plan.Paces.L[i].N.toString()), // Ns are string in the DB...
-          stopTime: parseFloat(plan.MileData.L[i].M.stopTime.toString())
+          stopTime: parseFloat(data.M.stopTime.N)
         };
       }),
       lastMileDistance: plan.LastMileDistance.N
