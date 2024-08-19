@@ -110,7 +110,7 @@ export class CorsaBackendStack extends cdk.Stack {
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket', {
       cors: [
         {
-          allowedOrigins: ['http://localhost:5173'], // Specify the correct origin
+          allowedOrigins: ['http://localhost:5173', 'https://corsa-one.vercel.app/'], // Specify the correct origin
           allowedMethods: [s3.HttpMethods.POST, s3.HttpMethods.PUT],
           allowedHeaders: ['*'],
           exposedHeaders: ['ETag'],
