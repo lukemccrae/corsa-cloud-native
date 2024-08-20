@@ -119,7 +119,7 @@ export class CorsaBackendStack extends cdk.Stack {
       ]
     });
 
-    // when a new item is added to the bucket trigger an event and write metadata to dynamo
+    // when a new item wss://afno5ipvkfamfagfok7ad4qnwm.appsync-realtime-api.us-west-1.amazonaws.com/graphqlis added to the bucket trigger an event and write metadata to dynamo
     // metadata will be passed along with the file which will be retrieved from the activity
     // this should include name, date, distance
 
@@ -324,6 +324,11 @@ export class CorsaBackendStack extends cdk.Stack {
     queryDataSource.createResolver('getGeoJsonBySortKey', {
       typeName: 'Query',
       fieldName: 'getGeoJsonBySortKey'
+    });
+
+    queryDataSource.createResolver('getPlanById', {
+      typeName: 'Query',
+      fieldName: 'getPlanById'
     });
 
     mutationDataSource.createResolver('createPlanFromActivity', {

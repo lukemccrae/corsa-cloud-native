@@ -47,6 +47,35 @@ type DbPlan = {
   };
 };
 
+export const getPlanById = async (args: any): Promise<any> => {
+  const client = new DynamoDBClient({ region: 'us-west-1' });
+  const { planId } = args;
+  const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+
+  const queryCommand = new QueryCommand({
+    TableName: tableName,
+    KeyConditionExpression: 'BucketKey = :planId',
+    ExpressionAttributeValues: {
+      ':BucketKey': { S: planId }
+    }
+  });
+
+  try {
+    const result = await client.send(queryCommand);
+    if (result.Items === undefined) return [];
+
+    //not sure why this is necessary
+    const plan = JSON.parse(JSON.stringify(result.Items));
+
+    console.log(JSON.stringify(plan));
+
+    return plan;
+  } catch (e) {
+    console.log(e, '<< error batch get');
+  }
+
+}
+
 export const getPlansByUserId = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
 
