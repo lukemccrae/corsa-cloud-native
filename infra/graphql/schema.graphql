@@ -8,8 +8,8 @@ type Query {
     dateTo: Int!
     token: String!
   ): [Activity]!
-      @aws_iam
-      @aws_cognito_user_pools
+	  @aws_cognito_user_pools(cognito_groups: ["Users"])
+    @aws_auth(cognito_groups: ["Users"])
   getPlansByUserId(userId: ID!): [Plan]
   getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
   getPlanById(planId: ID!): Plan!
