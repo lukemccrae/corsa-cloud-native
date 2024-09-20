@@ -6,10 +6,11 @@ type Query {
     offset: Int!
     dateFrom: Int!
     dateTo: Int!
+    token: String!
   ): [Activity]!
-	  @aws_cognito_user_pools(cognito_groups: ["Users"])
-    @aws_auth(cognito_groups: ["Users"])
   getPlansByUserId(userId: ID!): [Plan]
+  	  @aws_cognito_user_pools(cognito_groups: ["Users"])
+      @aws_auth(cognito_groups: ["Users"])
   getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
   getPlanById(planId: ID!): Plan!
 }
