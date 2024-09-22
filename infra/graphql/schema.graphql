@@ -9,10 +9,8 @@ type Query {
     token: String!
   ): [Activity]!
   getPlansByUserId(userId: ID!): [Plan]
-  	  @aws_cognito_user_pools(cognito_groups: ["corsa-user-pool"])
-      @aws_auth(cognito_groups: ["corsa-user-pool"])
   getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
-  getPlanById(planId: ID!): Plan!
+  getPlanById(planId: ID!, userId: ID!): Plan!
 }
 
 type Mutation {

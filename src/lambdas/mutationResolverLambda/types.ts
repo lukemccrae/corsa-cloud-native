@@ -67,6 +67,7 @@ export type MileData = {
   elevationLoss: Scalars['Int']['output'];
   mileVertProfile?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
   pace?: Maybe<Scalars['Int']['output']>;
+  stopTime?: Maybe<Scalars['Int']['output']>;
 };
 
 export type MileDataInput = {
@@ -129,6 +130,7 @@ export type Query = {
   getActivities: Array<Maybe<Activity>>;
   getActivityById?: Maybe<Activity>;
   getGeoJsonBySortKey: FeatureCollection;
+  getPlanById: Plan;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
 };
 
@@ -153,6 +155,12 @@ export type QueryGetGeoJsonBySortKeyArgs = {
 };
 
 
+export type QueryGetPlanByIdArgs = {
+  planId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
 export type QueryGetPlansByUserIdArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -162,6 +170,7 @@ export type S3MileData = {
   elevationGain: Scalars['Float']['output'];
   elevationLoss: Scalars['Float']['output'];
   index: Scalars['Int']['output'];
+  stopTime: Scalars['Int']['output'];
 };
 
 export type UpdatedPlan = {
@@ -336,6 +345,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
   elevationLoss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   mileVertProfile?: Resolver<Maybe<Array<Maybe<ResolversTypes['Int']>>>, ParentType, ContextType>;
   pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  stopTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -360,6 +370,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
   getGeoJsonBySortKey?: Resolver<ResolversTypes['FeatureCollection'], ParentType, ContextType, RequireFields<QueryGetGeoJsonBySortKeyArgs, 'sortKey'>>;
+  getPlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<QueryGetPlanByIdArgs, 'planId' | 'userId'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
 };
 
@@ -367,6 +378,7 @@ export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversP
   elevationGain?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   elevationLoss?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stopTime?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

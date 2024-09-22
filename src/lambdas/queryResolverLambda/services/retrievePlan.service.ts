@@ -48,15 +48,19 @@ type DbPlan = {
 };
 
 export const getPlanById = async (args: any): Promise<any> => {
+
   const client = new DynamoDBClient({ region: 'us-west-1' });
-  const { planId } = args;
+  const { planId, userId } = args;
+  console.log(planId, userId, '<< args')
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  // const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC"
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
-    KeyConditionExpression: 'BucketKey = :planId',
+    KeyConditionExpression: 'UserId = :userId AND BucketKey = :planId',
     ExpressionAttributeValues: {
-      ':BucketKey': { S: planId }
+      ':userId': { S: userId },  // Partition key
+      ':planId': { S: planId } // Sort key
     }
   });
 
@@ -67,13 +71,33 @@ export const getPlanById = async (args: any): Promise<any> => {
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(result.Items));
 
-    console.log(JSON.stringify(plan));
-
-    return plan;
+    return parsePlans(plan)[0];
   } catch (e) {
     console.log(e, '<< error batch get');
   }
+}
 
+const parsePlans = (plans: [DbPlan]) => {
+  return plans.map((plan: DbPlan) => ({
+    id: plan.BucketKey.S,
+    userId: plan.UserId.S,
+    name: plan.Name.S,
+    startTime: plan.StartTime.N,
+    mileData: plan.MileData.L.map((data, i) => {
+      return {
+        elevationGain: Math.round(
+          parseFloat(data.M.elevationGain.N.toString())
+        ),
+        elevationLoss: Math.round(
+          parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
+        ),
+        mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
+        pace: parseFloat(plan.Paces.L[i].N.toString()), // Ns are string in the DB...
+        stopTime: parseFloat(data.M.stopTime.N)
+      };
+    }),
+    lastMileDistance: plan.LastMileDistance.N
+  }));
 }
 
 export const getPlansByUserId = async (args: any): Promise<any> => {
@@ -101,28 +125,7 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
 
     console.log(JSON.stringify(plans));
 
-    return plans.map((plan: DbPlan) => ({
-      id: plan.BucketKey.S,
-      userId: plan.UserId.S,
-      name: plan.Name.S,
-      startTime: plan.StartTime.N,
-      mileData: plan.MileData.L.map((data, i) => {
-        console.log(JSON.stringify(data), '<< plan')
-
-        return {
-          elevationGain: Math.round(
-            parseFloat(data.M.elevationGain.N.toString())
-          ),
-          elevationLoss: Math.round(
-            parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
-          ),
-          mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
-          pace: parseFloat(plan.Paces.L[i].N.toString()), // Ns are string in the DB...
-          stopTime: parseFloat(data.M.stopTime.N)
-        };
-      }),
-      lastMileDistance: plan.LastMileDistance.N
-    }));
+    return parsePlans(plans)
   } catch (e) {
     console.log(e, '<< error batch get');
   }
