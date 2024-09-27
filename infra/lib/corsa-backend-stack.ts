@@ -274,13 +274,12 @@ export class CorsaBackendStack extends cdk.Stack {
     utilityLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     presignUrlLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     createPlanFromGeoJsonLambdaRole.attachInlinePolicy(cloudwatchPolicy);
+    openAIassistantLambdaRole.attachInlinePolicy(cloudwatchPolicy)
 
     geoJsonBucket.grantRead(queryLambdaRole);
 
     geoJsonBucket.grantReadWrite(mutationLambdaRole);
     geoJsonBucket.grantReadWrite(createPlanFromGeoJsonLambdaRole);
-
-
 
     trackMetadataTable.grantReadData(queryResolverLambda);
     trackMetadataTable.grantReadWriteData(mutationResolverLambda);
@@ -310,6 +309,12 @@ export class CorsaBackendStack extends cdk.Stack {
         ]
       })
     );
+
+    openAIassistantLambdaRole.addToPolicy(new iam.PolicyStatement({
+      actions: ['ssm:GetParameters'],
+      resources: [
+        'arn:aws:ssm:us-west-1:542047678132:parameter/ASSISTANT_API_KEY']
+    }))
 
     const queryDataSource = api.addLambdaDataSource(
       'QueryDataSource',
