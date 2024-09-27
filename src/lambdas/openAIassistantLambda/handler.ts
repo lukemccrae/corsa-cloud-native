@@ -20,7 +20,14 @@ export const handler = async (event: any, context: any): Promise<any> => {
 
     const workoutPlan = await chatCompletionAssistant(event.arguments, result.Parameters[0].Value)
     console.log(workoutPlan, '<< workout plan')
-
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify(workoutPlan)
+    };
   } catch (err) {
     console.error('Error retrieving parameter:', err);
     throw err;

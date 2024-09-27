@@ -20,6 +20,10 @@ export class CorsaBackendStack extends cdk.Stack {
       signInAliases: { email: true }
     });
 
+    const authorizer = new apiGateway.CognitoUserPoolsAuthorizer(this, 'CorsaApiAuthorizer', {
+      cognitoUserPools: [userPool],
+    });
+
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -123,12 +127,14 @@ export class CorsaBackendStack extends cdk.Stack {
       new apiGateway.LambdaIntegration(gpxToGeoJsonLambda)
     );
 
-
-
     const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
 
     openAIassistantApiConstruct.addMethod('POST',
-      new apiGateway.LambdaIntegration(openAIassistantLambda)
+      new apiGateway.LambdaIntegration(openAIassistantLambda),
+      {
+        authorizer,
+        authorizationType: apiGateway.AuthorizationType.COGNITO
+      }
     );
 
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket', {
@@ -265,8 +271,6 @@ export class CorsaBackendStack extends cdk.Stack {
         }
       }
     );
-
-
 
     // permissions
     queryLambdaRole.attachInlinePolicy(cloudwatchPolicy);
