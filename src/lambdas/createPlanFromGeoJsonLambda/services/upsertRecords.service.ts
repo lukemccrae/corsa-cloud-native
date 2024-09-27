@@ -45,6 +45,7 @@ interface createPlanFromGeoJsonArgs {
 
 const client = new DynamoDBClient({ region: 'us-west-1' });
 
+// welcome to hell =D
 export const createPlanFromGeoJson = async (
   args: createPlanFromGeoJsonArgs
 ): Promise<CreatedPlan> => {

@@ -73,6 +73,10 @@ export class CorsaBackendStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
     });
 
+    const openAIassistantLambdaRole = new iam.Role(this, 'OpenAIassistantLambdaRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
     const gpxToGeoJsonLambda = new lambda.Function(this, 'gpxToGeoJsonLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -93,7 +97,19 @@ export class CorsaBackendStack extends cdk.Stack {
       }
     );
 
-    const resource = utilityApi.root.addResource('gpx-geojson');
+    const openAIassistantLambda = new lambda.Function(
+      this,
+      'openAIassistantLambda',
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'index.handler',
+        code: lambda.Code.fromAsset('src/lambdas/openAIassistantLambda/dist'),
+        role: openAIassistantLambdaRole,
+        timeout: cdk.Duration.seconds(10)
+      }
+    );
+
+    const geoJsonApiConstruct = utilityApi.root.addResource('gpx-geojson');
     const presignedUrlForGpxUploads =
       utilityApi.root.addResource('gpx-presigned');
 
@@ -102,9 +118,17 @@ export class CorsaBackendStack extends cdk.Stack {
       new apiGateway.LambdaIntegration(presignedGpxUrlLambda)
     );
 
-    resource.addMethod(
+    geoJsonApiConstruct.addMethod(
       'POST',
       new apiGateway.LambdaIntegration(gpxToGeoJsonLambda)
+    );
+
+
+
+    const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
+
+    openAIassistantApiConstruct.addMethod('POST',
+      new apiGateway.LambdaIntegration(openAIassistantLambda)
     );
 
     const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket', {
