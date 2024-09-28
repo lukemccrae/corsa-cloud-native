@@ -20,12 +20,6 @@ export class CorsaBackendStack extends cdk.Stack {
       signInAliases: { email: true }
     });
 
-    const authorizer = new apiGateway.CognitoUserPoolsAuthorizer(this, 'CorsaApiAuthorizer', {
-      cognitoUserPools: [userPool],
-    });
-
-    console.log(authorizer, '<< authorizer')
-
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -130,6 +124,12 @@ export class CorsaBackendStack extends cdk.Stack {
     );
 
     const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
+
+    const existingUserPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
+
+    const authorizer = new apiGateway.CognitoUserPoolsAuthorizer(this, 'CorsaApiAuthorizer', {
+      cognitoUserPools: [existingUserPool],
+    });
 
     openAIassistantApiConstruct.addMethod('POST',
       new apiGateway.LambdaIntegration(openAIassistantLambda),
