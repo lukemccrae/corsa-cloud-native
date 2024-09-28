@@ -13,13 +13,6 @@ export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const userPool = new cognito.UserPool(this, 'CorsaUserPool', {
-      userPoolName: 'corsa-user-pool',
-      selfSignUpEnabled: true,
-      autoVerify: { email: true },
-      signInAliases: { email: true }
-    });
-
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
