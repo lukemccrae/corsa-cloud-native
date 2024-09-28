@@ -24,6 +24,8 @@ export class CorsaBackendStack extends cdk.Stack {
       cognitoUserPools: [userPool],
     });
 
+    console.log(authorizer, '<< authorizer')
+
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
