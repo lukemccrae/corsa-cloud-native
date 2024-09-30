@@ -110,21 +110,30 @@ export class CorsaBackendStack extends cdk.Stack {
     const presignedUrlForGpxUploads =
       utilityApi.root.addResource('gpx-presigned');
 
-    presignedUrlForGpxUploads.addMethod(
-      'GET',
-      new apiGateway.LambdaIntegration(presignedGpxUrlLambda)
-    );
-
-    geoJsonApiConstruct.addMethod(
-      'POST',
-      new apiGateway.LambdaIntegration(gpxToGeoJsonLambda)
-    );
-
-    const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
 
     const authorizer = new apiGateway.CognitoUserPoolsAuthorizer(this, 'CorsaApiAuthorizer', {
       cognitoUserPools: [userPool],
     });
+
+    presignedUrlForGpxUploads.addMethod(
+      'GET',
+      new apiGateway.LambdaIntegration(presignedGpxUrlLambda),
+      {
+        authorizer,
+        authorizationType: apiGateway.AuthorizationType.COGNITO
+      }
+    );
+
+    geoJsonApiConstruct.addMethod(
+      'POST',
+      new apiGateway.LambdaIntegration(gpxToGeoJsonLambda),
+      {
+        authorizer,
+        authorizationType: apiGateway.AuthorizationType.COGNITO
+      }
+    );
+
+    const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
 
     openAIassistantApiConstruct.addMethod('POST',
       new apiGateway.LambdaIntegration(openAIassistantLambda),
@@ -159,18 +168,16 @@ export class CorsaBackendStack extends cdk.Stack {
     const api = new appsync.GraphqlApi(this, 'CorsaGraphAPI', {
       name: 'corsa-graphql-api',
       ...corsOptions,
-      schema: appsync.SchemaFile.fromAsset('infra/graphql/schema.graphql') // Replace with the path to your GraphQL schema file
+      schema: appsync.SchemaFile.fromAsset('infra/graphql/schema.graphql'), // Replace with the path to your GraphQL schema file
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: {
+            userPool: userPool,
+          }
 
-      // I dont want to include this yet
-      // I can develop with my own strava credentials in an ENV
-      // authorizationConfig: {
-      //   defaultAuthorization: {
-      //     authorizationType: appsync.AuthorizationType.API_KEY,
-      //     apiKeyConfig: {
-      //       expires: cdk.Expiration.after(cdk.Duration.days(365)),
-      //     },
-      //   },
-      // },
+        },
+      },
     });
 
     const cloudWatchLogsPolicy = new iam.PolicyDocument({
