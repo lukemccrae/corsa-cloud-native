@@ -13,19 +13,23 @@ export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-      exports.handler = (event, context, callback) => {
-        event.response.autoConfirmUser = true;
-        event.response.autoVerifyEmail = true;
-        context.done(null, event);
-    };
-      `)
-    });
+    const userPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
 
-    userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUpLambda);
+    // const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
+    //   runtime: lambda.Runtime.NODEJS_18_X,
+    //   handler: 'index.handler',
+    //   code: lambda.Code.fromInline(`
+    //     exports.handler = (event, context, callback) => {
+    //       event.response.autoConfirmUser = true;
+    //       event.response.autoVerifyEmail = true;
+    //       context.done(null, event);
+    //     };
+    //   `)
+    // });
+
+
+
+    // userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUpLambda);
 
     const domain = userPool.addDomain('Domain', {
       cognitoDomain: {
@@ -118,10 +122,8 @@ export class CorsaBackendStack extends cdk.Stack {
 
     const openAIassistantApiConstruct = utilityApi.root.addResource('corsa-assistant');
 
-    const existingUserPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
-
     const authorizer = new apiGateway.CognitoUserPoolsAuthorizer(this, 'CorsaApiAuthorizer', {
-      cognitoUserPools: [existingUserPool],
+      cognitoUserPools: [userPool],
     });
 
     openAIassistantApiConstruct.addMethod('POST',
