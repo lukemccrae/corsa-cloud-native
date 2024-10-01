@@ -20,6 +20,7 @@
     "esbuild": "^0.19.3"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "lambda-local": "^2.1.2",
     "terser": "^5.20.0",
     "typescript": "^5.2.2"

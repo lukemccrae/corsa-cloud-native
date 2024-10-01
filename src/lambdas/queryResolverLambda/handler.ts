@@ -1,29 +1,31 @@
-import { Omics } from 'aws-sdk';
 import {
   getActivityById,
   getActivities
 } from './services/retrieveActivity.service';
 import { getGeoJsonBySortKey } from './services/retrieveGeoJson.service';
 import { getPlansByUserId } from './services/retrievePlan.service';
-import { getPlanById } from './services/retrievePlan.service'
+import { getPlanById } from './services/retrievePlan.service';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// export const handler = async (event: any, context: any): Promise<any> => {
-export const handler = async (localevent: any, context: any): Promise<any> => {
-  const event = localevent.body;
+export const handler = async (event: any, context: any): Promise<any> => {
   try {
-    console.log(event, '< event');
-    if (event.info.parentTypeName === 'Query') {
-      switch (event.info.fieldName) {
+    // If running locally with `yarn ll` use a different field from the event
+    const isLocal = (process.env.LOCAL === 'true') || false;
+    const currentEvent = isLocal ? event.body : event;
+
+    if (currentEvent.info.parentTypeName === 'Query') {
+      switch (currentEvent.info.fieldName) {
         case 'getActivityById':
           return getActivityById();
         case 'getActivities':
-          return await getActivities(event.arguments);
+          return await getActivities(currentEvent.arguments);
         case 'getPlansByUserId':
-          return await getPlansByUserId(event.arguments);
+          return await getPlansByUserId(currentEvent.arguments);
         case 'getGeoJsonBySortKey':
-          return await getGeoJsonBySortKey(event.arguments);
+          return await getGeoJsonBySortKey(currentEvent.arguments);
         case 'getPlanById':
-          return await getPlanById(event.arguments)
+          return await getPlanById(currentEvent.arguments)
       }
     }
   } catch (e) {

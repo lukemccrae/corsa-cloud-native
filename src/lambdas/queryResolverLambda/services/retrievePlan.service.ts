@@ -56,7 +56,6 @@ type DbPlan = {
 export const getPlanById = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
   const { planId, userId } = args;
-  console.log(planId, userId, '<< args')
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
 
   const queryCommand = new QueryCommand({
@@ -70,14 +69,11 @@ export const getPlanById = async (args: any): Promise<any> => {
 
   try {
     const planResult = await client.send(queryCommand);
-    console.log(planResult.Items, '<< itemss')
     if (planResult.Items === undefined) return [];
 
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
-    console.log(plan, '<< plan')
     const result = parsePlans(plan)[0];
-    console.log(result, '<< result')
 
     return result;
   } catch (e) {
@@ -86,14 +82,12 @@ export const getPlanById = async (args: any): Promise<any> => {
 }
 
 const parsePlans = (plans: [DbPlan]) => {
-  console.log(plans, '<< plans')
   return plans.map((plan: DbPlan) => ({
     id: plan.BucketKey.S,
     userId: plan.UserId.S,
     name: plan.Name.S,
     startTime: plan.StartTime.N,
     mileData: plan.MileData.L.map((data, i) => {
-      console.log(data, '<< data')
       return {
         elevationGain: Math.round(
           parseFloat(data.M.elevationGain.N.toString())
@@ -132,8 +126,6 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
 
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
-
-    console.log(JSON.stringify(plans));
 
     return parsePlans(plans)
   } catch (e) {

@@ -2,18 +2,22 @@
 import {
   createPlanFromGeoJson
 } from './services/upsertRecords.service';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const handler = async (event: any, context: any): Promise<any> => {
-  // export const handler = async (localevent: any, context: any): Promise<any> => {
-  //   const event = localevent.body;
+  // If running locally with `yarn ll` use a different field from the event
+  const isLocal = (process.env.LOCAL === 'true') || false;
+  const currentEvent = isLocal ? event.body : event;
+
   try {
-    if (event.info.parentTypeName === 'Mutation') {
-      switch (event.info.fieldName) {
+    if (currentEvent.info.parentTypeName === 'Mutation') {
+      switch (currentEvent.info.fieldName) {
         // strava integration not working on new site
         // case 'createPlanFromActivity':
         //   return await createPlanFromActivity(event.arguments);
         case 'createPlanFromGeoJson':
-          return await createPlanFromGeoJson(event.arguments);
+          return await createPlanFromGeoJson(currentEvent.arguments);
       }
     }
   } catch (e) {
