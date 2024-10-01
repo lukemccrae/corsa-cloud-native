@@ -1,4 +1,10 @@
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
+// dotenv necessary here only for local development with `yarn ll`
+// this file is referencing environment variables defined in CDK
+// the lambda runtime has dotenv in its environment so this may be redundant,
+// i am unsure if the dependency overlap will cause issues
+import dotenv from 'dotenv';
+dotenv.config();
 
 type NumberObject = {
   N: string;
@@ -52,7 +58,6 @@ export const getPlanById = async (args: any): Promise<any> => {
   const { planId, userId } = args;
   console.log(planId, userId, '<< args')
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
-  // const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC"
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
@@ -111,7 +116,6 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
   const { userId } = args;
 
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
-  // const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC"
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
