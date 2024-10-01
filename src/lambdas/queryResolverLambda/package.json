@@ -8,7 +8,6 @@
     "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
     "buildlocal": "esbuild handler.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=local/index.js",
     "ll": "yarn buildlocal && yarn lambda-local -l local/index.js -h handler --watch"
-  
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.427.0",
@@ -17,11 +16,12 @@
     "@types/node-fetch": "^2.6.7",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1464.0",
+    "dotenv": "^16.4.5",
     "esbuild": "^0.19.3"
   },
   "devDependencies": {
+    "lambda-local": "^2.1.2",
     "terser": "^5.20.0",
-    "typescript": "^5.2.2",
-    "lambda-local": "^2.1.2"
+    "typescript": "^5.2.2"
   }
 }
