@@ -44,8 +44,8 @@ export class CorsaBackendStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
 
-    const trackMetadataTable = dynamodb.Table.fromTableArn(this, 'TrackMetadataTable',
-      `${process.env.DYNAMODB_TABLE_ARN}`);
+    const trackMetadataTable = dynamodb.Table.fromTableName(this, 'TrackMetadataTable',
+      `${process.env.DYNAMODB_TABLE_NAME}`);
 
     // Create a DynamoDB table for storing metadata for geoJSON track
     // const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
