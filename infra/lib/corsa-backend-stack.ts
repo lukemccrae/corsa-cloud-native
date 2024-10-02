@@ -8,6 +8,8 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { type Construct } from 'constructs';
 import { Duration } from 'aws-cdk-lib';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -42,17 +44,20 @@ export class CorsaBackendStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
 
+    const trackMetadataTable = dynamodb.Table.fromTableArn(this, 'TrackMetadataTable',
+      `${process.env.DYNAMODB_TABLE_ARN}`);
+
     // Create a DynamoDB table for storing metadata for geoJSON track
-    const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
-      partitionKey: {
-        name: 'UserId',
-        type: dynamodb.AttributeType.STRING
-      },
-      sortKey: {
-        name: 'BucketKey',
-        type: dynamodb.AttributeType.STRING
-      }
-    });
+    // const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
+    //   partitionKey: {
+    //     name: 'UserId',
+    //     type: dynamodb.AttributeType.STRING
+    //   },
+    //   sortKey: {
+    //     name: 'BucketKey',
+    //     type: dynamodb.AttributeType.STRING
+    //   }
+    // });
 
     const utilityApi = new apiGateway.RestApi(this, 'CorsaUtilityApi', {
       defaultCorsPreflightOptions: {
@@ -312,8 +317,8 @@ export class CorsaBackendStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: ['ssm:GetParameters'],
         resources: [
-          'arn:aws:ssm:us-west-1:542047678132:parameter/ACCESS_KEY_ID',
-          'arn:aws:ssm:us-west-1:542047678132:parameter/SECRET_ACCESS_KEY'
+          `${process.env.ACCESS_KEY_ID_ARN}`,
+          `${process.env.SECRET_ACCESS_KEY}`
         ]
       })
     );
@@ -321,7 +326,8 @@ export class CorsaBackendStack extends cdk.Stack {
     openAIassistantLambdaRole.addToPolicy(new iam.PolicyStatement({
       actions: ['ssm:GetParameters'],
       resources: [
-        'arn:aws:ssm:us-west-1:542047678132:parameter/ASSISTANT_API_KEY']
+        `${process.env.ASSISTANT_API_KEY}`
+      ]
     }))
 
     const queryDataSource = api.addLambdaDataSource(
@@ -382,12 +388,5 @@ export class CorsaBackendStack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'updatePlanById'
     });
-
-    // TODO: what is this output doing? i dont remember having this before
-
-    // Output the GraphQL API endpoint
-    // new cdk.CfnOutput(this, 'GraphQLApiEndpoint', {
-    //   value: api.graphqlUrl
-    // })
   }
 }
