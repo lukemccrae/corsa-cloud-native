@@ -1,0 +1,240 @@
+{
+	"info": {
+		"_postman_id": "d9981389-1751-4d83-9abe-4232c64c5e75",
+		"name": "corsa local",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17531831"
+	},
+	"item": [
+		{
+			"name": "local post (event needs .body)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"info\": {\r\n        \"selectionSetList\": [\r\n            \"success\"\r\n        ],\r\n        \"fieldName\": \"createPlanFromGeoJson\",\r\n        \"parentTypeName\": \"Mutation\"\r\n    },\r\n    \"arguments\": {\r\n        \"gpxId\": \"20ad5a77-674b-4519-9d21-59e2ceaf17c3\",\r\n        \"userId\": \"379b949b-f20b-4860-9963-9274308aca09\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8008/graphql",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPlanById_LOCAL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"info\": {\r\n        \"selectionSetList\": [\r\n            \"success\"\r\n        ],\r\n        \"fieldName\": \"getPlanById\",\r\n        \"parentTypeName\": \"Query\"\r\n    },\r\n    \"arguments\": {\r\n        \"planId\": \"57ee249b-ba82-461e-9935-08d2912832df\",\r\n        \"userId\": \"379b949b-f20b-4860-9963-9274308aca09\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8008/graphql",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createPlanFromJon_LOCAL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"info\": {\r\n        \"selectionSetList\": [\r\n            \"success\"\r\n        ],\r\n        \"fieldName\": \"createPlanFromGeoJson\",\r\n        \"parentTypeName\": \"Mutation\"\r\n    },\r\n    \"arguments\": {\r\n        \"gpxId\": \"d5a702a8-b0e3-47c0-8710-5b971d6ea417\",\r\n        \"userId\": \"379b949b-f20b-4860-9963-9274308aca09\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8008/graphql",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-presigned",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://ze1g364jdi.execute-api.us-west-1.amazonaws.com/prod/gpx-presigned",
+					"protocol": "https",
+					"host": [
+						"ze1g364jdi",
+						"execute-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prod",
+						"gpx-presigned"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "corsa-assistant",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ze1g364jdi.execute-api.us-west-1.amazonaws.com/prod/corsa-assistant",
+					"protocol": "https",
+					"host": [
+						"ze1g364jdi",
+						"execute-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prod",
+						"corsa-assistant"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPlansByUserId_LOCAL",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"info\": {\r\n        \"selectionSetList\": [\r\n            \"name\",\r\n            \"id\",\r\n            \"lastMileDistance\",\r\n            \"mileData\",\r\n            \"mileData/pace\"\r\n        ],\r\n        \"fieldName\": \"getPlansByUserId\",\r\n        \"parentTypeName\": \"Query\",\r\n        \"selectionSetGraphQL\": \"{\\n  name\\n  id\\n  lastMileDistance\\n  mileData {\\n    pace\\n  }\\n}\"\r\n    },\r\n    \"arguments\": {\r\n        \"userId\": \"379b949b-f20b-4860-9963-9274308aca09\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8008/graphql",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

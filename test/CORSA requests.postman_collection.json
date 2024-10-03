@@ -1,0 +1,261 @@
+{
+	"info": {
+		"_postman_id": "ee01c6ba-89a6-4597-8812-1f984092a1e4",
+		"name": "CORSA requests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17531831"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"// Check if the AuthenticationResult exists and has an AccessToken\r",
+							"if (responseJson.AuthenticationResult && responseJson.AuthenticationResult.AccessToken) {\r",
+							"    // Assign the Access Token to an environment variable\r",
+							"    pm.environment.set(\"accessToken\", responseJson.AuthenticationResult.AccessToken);\r",
+							"    console.log(\"Access Token saved:\", responseJson.AuthenticationResult.AccessToken);\r",
+							"} else {\r",
+							"    console.error(\"Access Token not found in the response.\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Amz-Target",
+						"value": "AWSCognitoIdentityProviderService.InitiateAuth",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-amz-json-1.1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"AuthFlow\": \"USER_PASSWORD_AUTH\",\r\n  \"ClientId\": \"15847mslbb8f3e863b5b1griuh\",\r\n  \"AuthParameters\": {\r\n    \"USERNAME\": \"w33ble@gmail.com\",\r\n    \"PASSWORD\": \"Eeeee4444$$$$\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://cognito-idp.us-west-1.amazonaws.com",
+					"protocol": "https",
+					"host": [
+						"cognito-idp",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-presigned",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://ze1g364jdi.execute-api.us-west-1.amazonaws.com/prod/gpx-presigned",
+					"protocol": "https",
+					"host": [
+						"ze1g364jdi",
+						"execute-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prod",
+						"gpx-presigned"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "assistants-API",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://api.openai.com/v1/chat/completions?Authorization=Bearer {{accessToken}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"openai",
+						"com"
+					],
+					"path": [
+						"v1",
+						"chat",
+						"completions"
+					],
+					"query": [
+						{
+							"key": "Authorization",
+							"value": "Bearer {{accessToken}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "corsa-assistant",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ze1g364jdi.execute-api.us-west-1.amazonaws.com/prod/corsa-assistant",
+					"protocol": "https",
+					"host": [
+						"ze1g364jdi",
+						"execute-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prod",
+						"corsa-assistant"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPlanById",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query MyQuery {\r\n  getPlanById(planId: \"64f005e2-8db4-4db4-b32c-2632dabbbc3a\", userId: \"379b949b-f20b-4860-9963-9274308aca09\") {\r\n    name\r\n    startTime\r\n  }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://sehyihg7pnbozgb7mrvdyqrdlu.appsync-api.us-west-1.amazonaws.com/graphql",
+					"protocol": "https",
+					"host": [
+						"sehyihg7pnbozgb7mrvdyqrdlu",
+						"appsync-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPlansByUserId",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query MyQuery {\r\n  getPlansByUserId(userId: \"379b949b-f20b-4860-9963-9274308aca09\") {\r\n    name\r\n    id\r\n  }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://sehyihg7pnbozgb7mrvdyqrdlu.appsync-api.us-west-1.amazonaws.com/graphql",
+					"protocol": "https",
+					"host": [
+						"sehyihg7pnbozgb7mrvdyqrdlu",
+						"appsync-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
