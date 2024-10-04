@@ -5,7 +5,7 @@ import {
   createPlanFromGeoJson
 } from './services/upsertRecords.service';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: "../.env"});
 
 export const handler = async (event: any, context: any): Promise<any> => {
   const isLocal = (process.env.LOCAL === 'true') || false;

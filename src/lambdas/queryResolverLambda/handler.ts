@@ -6,7 +6,7 @@ import { getGeoJsonBySortKey } from './services/retrieveGeoJson.service';
 import { getPlansByUserId } from './services/retrievePlan.service';
 import { getPlanById } from './services/retrievePlan.service';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: '../.env'});
 
 export const handler = async (event: any, context: any): Promise<any> => {
   try {

@@ -20,6 +20,7 @@ import {
 } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 import { gpxToGeoJson } from './gpxGeoJson.service'
+import {validateEnvVar} from '../helpers/environmentVarValidate.helper'
 
 interface CreatePlanProps {
   activityId: string;
@@ -54,8 +55,7 @@ export const createPlanFromGeoJson = async (
   const s3Client = new S3Client({ region: 'us-west-1' });
 
   const command = new GetObjectCommand({
-    // Bucket: process.env.GEO_JSON_BUCKET_NAME,
-    Bucket: "corsabackendstack-geojsonbucket37355d9d-yb8me5pyze3i",
+    Bucket: process.env.GEO_JSON_BUCKET_NAME,
 
     Key: args.gpxId
   });
@@ -209,7 +209,7 @@ const uploadPlan = async (
 
     const bucketParams = {
       // Bucket: process.env.GEO_JSON_BUCKET_NAME,
-      Bucket: "corsabackendstack-geojsonbucket37355d9d-yb8me5pyze3i",
+      Bucket: validateEnvVar(process.env.GEO_JSON_BUCKET_NAME),
       Key: gpxId, // overwrite the GPX file with a more usable geoJSON
       Body: JSON.stringify(geoJson)
     };
@@ -252,7 +252,7 @@ const uploadPlan = async (
 
     const command = new PutItemCommand({
       // TableName: process.env.DYNAMODB_TABLE_NAME,
-      TableName: "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC",
+      TableName: process.env.DYNAMODB_TABLE_NAME,
       Item: {
         BucketKey: { S: Key },
         UserId: { S: userId },
@@ -277,3 +277,4 @@ const uploadPlan = async (
     return { success: false };
   }
 };
+

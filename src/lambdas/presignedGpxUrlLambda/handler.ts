@@ -2,6 +2,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { GetParametersCommandOutput, SSM } from '@aws-sdk/client-ssm';
+import dotenv from 'dotenv';
+dotenv.config({path: '../.env'});
 
 export const handler = async (event: any, context: any): Promise<any> => {
   // retrieve parameters
@@ -32,7 +34,7 @@ export const handler = async (event: any, context: any): Promise<any> => {
     const uuid = uuidv4();
 
     const command = new PutObjectCommand({
-      Bucket: 'corsabackendstack-geojsonbucket37355d9d-yb8me5pyze3i',
+      Bucket: process.env.GEO_JSON_BUCKET_NAME,
       Key: uuid
     });
 

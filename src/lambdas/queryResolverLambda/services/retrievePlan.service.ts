@@ -4,7 +4,7 @@ import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 // the lambda runtime has dotenv in its environment so this may be redundant,
 // i am unsure if the dependency overlap will cause issues
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: '../.env'});
 
 type NumberObject = {
   N: string;

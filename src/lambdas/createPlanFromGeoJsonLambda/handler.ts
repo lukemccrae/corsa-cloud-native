@@ -3,7 +3,8 @@ import {
   createPlanFromGeoJson
 } from './services/upsertRecords.service';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: '../.env'});
+
 
 export const handler = async (event: any, context: any): Promise<any> => {
   // If running locally with `yarn ll` use a different field from the event

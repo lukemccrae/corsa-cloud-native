@@ -8,13 +8,15 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { type Construct } from 'constructs';
 import { Duration } from 'aws-cdk-lib';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
+    const trackMetadataTableName = this.node.tryGetContext('DYNAMODB_TABLE_NAME');
+    const geoJsonBucketName = this.node.tryGetContext('GEO_JSON_BUCKET_NAME')
+    const REGION = this.node.tryGetContext('REGION');
+    const ACCOUNT = this.node.tryGetContext('ACCOUNT');
+    
     const userPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
 
     // const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
@@ -44,8 +46,8 @@ export class CorsaBackendStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
 
-    const trackMetadataTable = dynamodb.Table.fromTableName(this, 'TrackMetadataTable',
-      `${process.env.DYNAMODB_TABLE_NAME}`);
+    const trackMetadataTable = dynamodb.Table.fromTableArn(this, 'TrackMetadataTable',
+      `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${trackMetadataTableName}`);
 
     // Create a DynamoDB table for storing metadata for geoJSON track
     // const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
@@ -237,8 +239,8 @@ export class CorsaBackendStack extends cdk.Stack {
         code: lambda.Code.fromAsset('src/lambdas/queryResolverLambda/dist'),
         role: queryLambdaRole,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
+          DYNAMODB_TABLE_NAME: trackMetadataTableName,
+          GEO_JSON_BUCKET_NAME: geoJsonBucketName
         }
       }
     );
@@ -255,8 +257,8 @@ export class CorsaBackendStack extends cdk.Stack {
         role: mutationLambdaRole,
         timeout: Duration.seconds(15),
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
+          DYNAMODB_TABLE_NAME: trackMetadataTableName,
+          GEO_JSON_BUCKET_NAME: geoJsonBucketName
         }
       }
     );
@@ -275,8 +277,8 @@ export class CorsaBackendStack extends cdk.Stack {
         timeout: Duration.seconds(120),
         memorySize: 1024,
         environment: {
-          DYNAMODB_TABLE_NAME: trackMetadataTable.tableName,
-          GEO_JSON_BUCKET_NAME: geoJsonBucket.bucketName
+          DYNAMODB_TABLE_NAME: trackMetadataTableName,
+          GEO_JSON_BUCKET_NAME: geoJsonBucketName
         }
       }
     );
@@ -301,7 +303,7 @@ export class CorsaBackendStack extends cdk.Stack {
     const userIdDynamoPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['dynamodb:BatchGetItem'],
-      resources: [`${trackMetadataTable.tableArn}/UserId`]
+      resources: [trackMetadataTable.tableArn]
     });
 
     queryLambdaRole.addToPolicy(
@@ -316,17 +318,19 @@ export class CorsaBackendStack extends cdk.Stack {
     presignUrlLambdaRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameters'],
-        resources: [
-          `${process.env.ACCESS_KEY_ID_ARN}`,
-          `${process.env.SECRET_ACCESS_KEY}`
+        resources:         [
+          `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/ACCESS_KEY_ID_ARN`,
+          `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/SECRET_ACCESS_KEY`
         ]
+
       })
     );
 
     openAIassistantLambdaRole.addToPolicy(new iam.PolicyStatement({
       actions: ['ssm:GetParameters'],
       resources: [
-        `${process.env.ASSISTANT_API_KEY}`
+        `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/ASSISTANT_API_KEY`
+
       ]
     }))
 
