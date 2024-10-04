@@ -49,6 +49,13 @@ export const handler = async (event: any, context: any): Promise<any> => {
     };
   } catch (err) {
     console.error('Error retrieving parameter:', err);
-    throw err;
+    return {
+      statusCode: 400,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: "There was an error with your request."
+    };
   }
 };

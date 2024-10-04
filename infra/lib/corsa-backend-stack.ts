@@ -97,7 +97,10 @@ export class CorsaBackendStack extends cdk.Stack {
         handler: 'index.handler',
         code: lambda.Code.fromAsset('src/lambdas/presignedGpxUrlLambda/dist'),
         role: presignUrlLambdaRole,
-        timeout: cdk.Duration.seconds(10)
+        timeout: cdk.Duration.seconds(10),
+        environment: {
+          GEO_JSON_BUCKET_NAME: geoJsonBucketName
+        }
       }
     );
 
@@ -319,7 +322,7 @@ export class CorsaBackendStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: ['ssm:GetParameters'],
         resources:         [
-          `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/ACCESS_KEY_ID_ARN`,
+          `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/ACCESS_KEY_ID`,
           `arn:aws:ssm:${REGION}:${ACCOUNT}:parameter/SECRET_ACCESS_KEY`
         ]
 
