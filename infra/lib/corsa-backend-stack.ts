@@ -153,17 +153,20 @@ export class CorsaBackendStack extends cdk.Stack {
       }
     );
 
-    const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket', {
-      cors: [
-        {
-          allowedOrigins: ['http://localhost:5173', 'https://corsa-one.vercel.app'], // Specify the correct origin
-          allowedMethods: [s3.HttpMethods.POST, s3.HttpMethods.PUT],
-          allowedHeaders: ['*'],
-          exposedHeaders: ['ETag'],
-          maxAge: 3000
-        }
-      ]
-    });
+    // create new bucket template
+    // const geoJsonBucket = new s3.Bucket(this, 'geoJsonBucket', {
+    //   cors: [
+    //     {
+    //       allowedOrigins: ['http://localhost:5173', 'https://corsa-one.vercel.app'], // Specify the correct origin
+    //       allowedMethods: [s3.HttpMethods.POST, s3.HttpMethods.PUT],
+    //       allowedHeaders: ['*'],
+    //       exposedHeaders: ['ETag'],
+    //       maxAge: 3000
+    //     }
+    //   ]
+    // });
+
+    const geoJsonBucket = s3.Bucket.fromBucketArn(this, 'geoJsonBucket', `arn:aws:s3:::${geoJsonBucketName}`);
 
     // when a new item wss://afno5ipvkfamfagfok7ad4qnwm.appsync-realtime-api.us-west-1.amazonaws.com/graphqlis added to the bucket trigger an event and write metadata to dynamo
     // metadata will be passed along with the file which will be retrieved from the activity

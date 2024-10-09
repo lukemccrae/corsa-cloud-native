@@ -64,6 +64,11 @@ type Plan {
   startTime: Int # start time of the event
   mileData: [MileData] # an array of mile information
   lastMileDistance: Float
+  distanceInMiles: Int
+  gainInMeters: Int
+  lossInMeters: Int
+  durationInSeconds: Int
+  gap: Int
 }
 
 type S3MileData {
@@ -79,6 +84,7 @@ type MileData {
   pace: Int # in seconds per mile
   mileVertProfile: [Int]
   stopTime: Int
+  gap: Int
 }
 
 type CreatedPlan {

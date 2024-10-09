@@ -81,13 +81,55 @@ export const getPlanById = async (args: any): Promise<any> => {
   }
 }
 
+export const percentageOfPace = (distance: number, secs: number) => {
+  return Math.round((1 / distance) * secs);
+};
+
+const calcGap = (pace: number, gain: number, loss: number) => {
+  // weight gain more than loss for gap, then convert meters to feet
+  const weightedVert = (gain + (loss * .2)) * 3.28084
+  // if gain is positive use pacing formula
+  if (weightedVert >= 0) {
+    // divide weighted gain exponent by 100 for pacing equation
+    const gainExponent = weightedVert / 100;
+    const gap = pace / Math.pow(1.1, gainExponent)
+
+    return Math.round(gap);
+  } else {
+    // pacing formula seems to break for downhill splits
+    // not sure how to effectively modify pace for downhill splits, just subtracting for now
+    return Math.round(pace - weightedVert);
+  }
+}
+
+const calcLastMileGap = (pace: number, gain: number, loss: number, lmd: number) => {
+  const percentPace = percentageOfPace(lmd, pace)
+  return calcGap(percentPace, gain, loss)
+}
+
+// big scary
 const parsePlans = (plans: [DbPlan]) => {
+  let cumulativeGain = 0;
+  let cumulativeLoss = 0;
+  let duration = 0;
   return plans.map((plan: DbPlan) => ({
     id: plan.BucketKey.S,
     userId: plan.UserId.S,
     name: plan.Name.S,
     startTime: plan.StartTime.N,
     mileData: plan.MileData.L.map((data, i) => {
+
+      duration += parseFloat(plan.Paces.L[i].N.toString());
+
+      let finalMile: boolean = i === plan.MileData.L.length - 1;
+      let loss = parseFloat(data.M.elevationLoss.N.toString());
+      let gain = parseFloat(data.M.elevationGain.N.toString());
+      let pace = parseFloat(plan.Paces.L[i].N.toString());
+      console.log(pace, '<< pace')
+
+      cumulativeLoss += loss;
+      cumulativeGain += gain;
+
       return {
         elevationGain: Math.round(
           parseFloat(data.M.elevationGain.N.toString())
@@ -96,11 +138,16 @@ const parsePlans = (plans: [DbPlan]) => {
           parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
         ),
         mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
-        pace: parseFloat(plan.Paces.L[i].N.toString()), // Ns are string in the DB...
-        stopTime: parseFloat(data.M.stopTime.N)
+        pace: !finalMile ? pace : percentageOfPace(Number(plan.LastMileDistance.N), pace), // Ns are string in the DB...
+        stopTime: parseFloat(data.M.stopTime.N),
+        gap: !finalMile ? calcGap(pace, gain, loss) : calcLastMileGap(pace, gain, loss, Number(plan.LastMileDistance.N))
       };
     }),
-    lastMileDistance: plan.LastMileDistance.N
+    lastMileDistance: plan.LastMileDistance.N,
+    distanceInMiles: plan.MileData.L.length - 1,
+    gainInMeters: Math.round(cumulativeGain),
+    lossInMeters: Math.round(cumulativeLoss),
+    durationInSeconds: Math.round(duration),
   }));
 }
 

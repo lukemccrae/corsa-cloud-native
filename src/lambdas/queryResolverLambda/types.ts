@@ -65,6 +65,7 @@ export type MileData = {
   __typename?: 'MileData';
   elevationGain: Scalars['Int']['output'];
   elevationLoss: Scalars['Int']['output'];
+  gap?: Maybe<Scalars['Int']['output']>;
   mileVertProfile?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
   pace?: Maybe<Scalars['Int']['output']>;
   stopTime?: Maybe<Scalars['Int']['output']>;
@@ -109,8 +110,13 @@ export type MutationUpdatePlanByIdArgs = {
 
 export type Plan = {
   __typename?: 'Plan';
+  distanceInMiles?: Maybe<Scalars['Int']['output']>;
+  durationInSeconds?: Maybe<Scalars['Int']['output']>;
+  gainInMeters?: Maybe<Scalars['Int']['output']>;
+  gap?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   lastMileDistance?: Maybe<Scalars['Float']['output']>;
+  lossInMeters?: Maybe<Scalars['Int']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
   startTime?: Maybe<Scalars['Int']['output']>;
@@ -343,6 +349,7 @@ export type GeometryResolvers<ContextType = any, ParentType extends ResolversPar
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
   elevationGain?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   elevationLoss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  gap?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mileVertProfile?: Resolver<Maybe<Array<Maybe<ResolversTypes['Int']>>>, ParentType, ContextType>;
   pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   stopTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -357,8 +364,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
+  distanceInMiles?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  durationInSeconds?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  gainInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  gap?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastMileDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  lossInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
