@@ -5,14 +5,18 @@
   "description": "Description of your Lambda function",
   "scripts": {
     "test": "echo \"No tests available\"",
-    "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
+    "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
+    "buildlocal": "esbuild handler.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=local/index.js",
+    "ll": "yarn buildlocal && yarn lambda-local -l local/index.js -h handler --watch"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.556.0",
     "@aws-sdk/client-ssm": "^3.556.0",
     "@aws-sdk/s3-request-presigner": "^3.556.0",
     "@types/node-fetch": "^2.6.7",
-    "esbuild": "^0.19.3"
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.19.3",
+    "lambda-local": "^2.2.0"
   },
   "devDependencies": {
     "terser": "^5.20.0",
