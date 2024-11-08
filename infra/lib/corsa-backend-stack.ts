@@ -19,19 +19,17 @@ export class CorsaBackendStack extends cdk.Stack {
     
     const userPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
 
-    // const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
-    //   runtime: lambda.Runtime.NODEJS_18_X,
-    //   handler: 'index.handler',
-    //   code: lambda.Code.fromInline(`
-    //     exports.handler = (event, context, callback) => {
-    //       event.response.autoConfirmUser = true;
-    //       event.response.autoVerifyEmail = true;
-    //       context.done(null, event);
-    //     };
-    //   `)
-    // });
-
-
+    const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`
+        exports.handler = (event, context, callback) => {
+          event.response.autoConfirmUser = true;
+          event.response.autoVerifyEmail = true;
+          context.done(null, event);
+        };
+      `)
+    });
 
     // userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUpLambda);
 
