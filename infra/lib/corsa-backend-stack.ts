@@ -62,7 +62,6 @@ export class CorsaBackendStack extends cdk.Stack {
     const utilityApi = new apiGateway.RestApi(this, 'CorsaUtilityApi', {
       defaultCorsPreflightOptions: {
         allowOrigins: ['*'],
-        // allowOrigins: ['http://localhost:3000'],
         allowMethods: apiGateway.Cors.ALL_METHODS
       }
     });
