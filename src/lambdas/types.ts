@@ -14,7 +14,18 @@ export interface Feature {
     name: string;
     mileData: S3MileData[];
     lastMileDistance: number;
+    maxElevationInFeet: number;
+    minElevationInFeet: number;
+    pointMetadata: PointMetadata[]
   };
+}
+
+export type PointMetadata = {
+  grade: number;
+  pace: number;
+  cumulativeDistance: number;
+  elevation: number;
+  time: string;
 }
 
 export type S3MileData = {

@@ -49,10 +49,14 @@ export type FeatureCollection = {
 
 export type GeoProperties = {
   __typename?: 'GeoProperties';
+  coordTimes?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   id?: Maybe<Scalars['Int']['output']>;
   lastMileDistance?: Maybe<Scalars['Float']['output']>;
+  maxElevationInFeet?: Maybe<Scalars['Float']['output']>;
   mileData?: Maybe<Array<Maybe<S3MileData>>>;
+  minElevationInFeet?: Maybe<Scalars['Float']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  pointMetadata?: Maybe<Array<Maybe<PointMetadata>>>;
 };
 
 export type Geometry = {
@@ -129,6 +133,15 @@ export type PlanInput = {
   sortKey: Scalars['String']['input'];
   startTime: Scalars['Int']['input'];
   userId: Scalars['String']['input'];
+};
+
+export type PointMetadata = {
+  __typename?: 'PointMetadata';
+  cumulativeDistance?: Maybe<Scalars['Float']['output']>;
+  elevation?: Maybe<Scalars['Float']['output']>;
+  grade?: Maybe<Scalars['Float']['output']>;
+  pace?: Maybe<Scalars['Int']['output']>;
+  time?: Maybe<Scalars['String']['output']>;
 };
 
 export type Query = {
@@ -271,6 +284,7 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Plan: ResolverTypeWrapper<Plan>;
   PlanInput: PlanInput;
+  PointMetadata: ResolverTypeWrapper<PointMetadata>;
   Query: ResolverTypeWrapper<{}>;
   S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -295,6 +309,7 @@ export type ResolversParentTypes = {
   Mutation: {};
   Plan: Plan;
   PlanInput: PlanInput;
+  PointMetadata: PointMetadata;
   Query: {};
   S3MileData: S3MileData;
   String: Scalars['String']['output'];
@@ -333,10 +348,14 @@ export type FeatureCollectionResolvers<ContextType = any, ParentType extends Res
 };
 
 export type GeoPropertiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['GeoProperties'] = ResolversParentTypes['GeoProperties']> = {
+  coordTimes?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   lastMileDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  maxElevationInFeet?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['S3MileData']>>>, ParentType, ContextType>;
+  minElevationInFeet?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pointMetadata?: Resolver<Maybe<Array<Maybe<ResolversTypes['PointMetadata']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -378,6 +397,15 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type PointMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['PointMetadata'] = ResolversParentTypes['PointMetadata']> = {
+  cumulativeDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  elevation?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  grade?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  pace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
@@ -410,6 +438,7 @@ export type Resolvers<ContextType = any> = {
   MileData?: MileDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;
+  PointMetadata?: PointMetadataResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   S3MileData?: S3MileDataResolvers<ContextType>;
   UpdatedPlan?: UpdatedPlanResolvers<ContextType>;

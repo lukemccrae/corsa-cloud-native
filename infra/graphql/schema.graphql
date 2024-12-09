@@ -46,6 +46,18 @@ type GeoProperties {
   name: String
   mileData: [S3MileData]
   lastMileDistance: Float
+  coordTimes: [String]
+  pointMetadata: [PointMetadata]
+  maxElevationInFeet: Float
+  minElevationInFeet: Float
+}
+
+type PointMetadata {
+  cumulativeDistance: Float
+  grade: Float
+  pace: Int
+  elevation: Float
+  time: String
 }
 
 type Activity {
