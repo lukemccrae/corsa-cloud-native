@@ -43,7 +43,7 @@ type DbPlan = {
     S: String;
   };
   StartTime: {
-    N: Number;
+    S: String;
   };
   Name: {
     S: String;
@@ -116,7 +116,7 @@ const parsePlans = (plans: [DbPlan]) => {
     id: plan.BucketKey.S,
     userId: plan.UserId.S,
     name: plan.Name.S,
-    startTime: plan.StartTime.N,
+    startTime: plan.StartTime.S,
     mileData: plan.MileData.L.map((data, i) => {
 
       duration += parseFloat(plan.Paces.L[i].N.toString());
@@ -125,7 +125,6 @@ const parsePlans = (plans: [DbPlan]) => {
       let loss = parseFloat(data.M.elevationLoss.N.toString());
       let gain = parseFloat(data.M.elevationGain.N.toString());
       let pace = parseFloat(plan.Paces.L[i].N.toString());
-      console.log(pace, '<< pace')
 
       cumulativeLoss += loss;
       cumulativeGain += gain;
@@ -170,9 +169,10 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
     // Execute the BatchGetItem operation
     const result = await client.send(queryCommand);
     if (result.Items === undefined) return [];
-
+    
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
+    console.log(plans, '<< query plans')
 
     return parsePlans(plans)
   } catch (e) {

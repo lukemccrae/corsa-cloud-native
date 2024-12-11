@@ -53,8 +53,12 @@ export type GeoProperties = {
   id?: Maybe<Scalars['Int']['output']>;
   lastMileDistance?: Maybe<Scalars['Float']['output']>;
   maxElevationInFeet?: Maybe<Scalars['Float']['output']>;
+  maxGrade?: Maybe<Scalars['Float']['output']>;
+  maxPace?: Maybe<Scalars['Int']['output']>;
   mileData?: Maybe<Array<Maybe<S3MileData>>>;
   minElevationInFeet?: Maybe<Scalars['Float']['output']>;
+  minGrade?: Maybe<Scalars['Float']['output']>;
+  minPace?: Maybe<Scalars['Int']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   pointMetadata?: Maybe<Array<Maybe<PointMetadata>>>;
 };
@@ -123,7 +127,7 @@ export type Plan = {
   lossInMeters?: Maybe<Scalars['Int']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
-  startTime?: Maybe<Scalars['Int']['output']>;
+  startTime?: Maybe<Scalars['String']['output']>;
   userId?: Maybe<Scalars['String']['output']>;
 };
 
@@ -352,8 +356,12 @@ export type GeoPropertiesResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   lastMileDistance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   maxElevationInFeet?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  maxGrade?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  maxPace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['S3MileData']>>>, ParentType, ContextType>;
   minElevationInFeet?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  minGrade?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  minPace?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pointMetadata?: Resolver<Maybe<Array<Maybe<ResolversTypes['PointMetadata']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -392,7 +400,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
   lossInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  startTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   userId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

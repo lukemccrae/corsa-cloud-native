@@ -50,6 +50,10 @@ type GeoProperties {
   pointMetadata: [PointMetadata]
   maxElevationInFeet: Float
   minElevationInFeet: Float
+  minGrade: Float
+  maxGrade: Float
+  minPace: Int
+  maxPace: Int
 }
 
 type PointMetadata {
@@ -73,7 +77,7 @@ type Plan {
   id: String
   userId: String
   name: String
-  startTime: Int # start time of the event
+  startTime: String # start time of the event
   mileData: [MileData] # an array of mile information
   lastMileDistance: Float
   distanceInMiles: Int

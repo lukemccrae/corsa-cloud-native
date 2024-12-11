@@ -17,6 +17,11 @@ export interface Feature {
     maxElevationInFeet: number;
     minElevationInFeet: number;
     pointMetadata: PointMetadata[]
+    minGrade: number;
+    maxGrade: number;
+    minPace: number;
+    maxPace: number;
+  };
   };
 }
 

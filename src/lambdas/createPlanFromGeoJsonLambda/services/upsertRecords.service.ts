@@ -2,26 +2,25 @@ import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
+const { find } = require('geo-tz')
+
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { CreatedPlan, } from '../types';
 import {
   AttributeValue,
   DynamoDBClient,
-  PutItemCommand,
-  UpdateItemCommand
+  PutItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
-import { addPacesToMileData } from '../helpers/paces.helper';
 import {
-  ActivityStreamData,
-  Altitude,
   FeatureCollectionBAD,
-  LatLng
+  
 } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 import { gpxToGeoJson } from './gpxGeoJson.service'
-import {validateEnvVar} from '../helpers/environmentVarValidate.helper'
-
+import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
+import { shortenIteratively } from '../helpers/removePoints.helper';
+import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
 interface CreatePlanProps {
   activityId: string;
   token: string;
@@ -74,58 +73,33 @@ export const createPlanFromGeoJson = async (
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
 
+  const reducedPoints = shortenIteratively(featureCollection)
+
   // TODO: These functions are using '../../types'
   // which is a type file i made
   // IT IS WRONG
   // I should be using the types generated from the schema in '../types'
-  const geoJsonWithMileIndices = makeMileIndices(featureCollection);
+  const geoJsonWithMileIndices = makeMileIndices(reducedPoints);
 
   const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
-  const generatePacesFromGeoJson = () => {
-    const feature = geoJson.features[0];
-    const paces = feature.properties.mileData.map((m, i) => {
-      const timeInSeconds =
-        Date.parse(
-          // annoying indexing here because mileData stores the
-          //  BEGINNING point of the mile and here i need the end
-          feature.properties.coordTimes[
-          // if i is the last, make it the end of the array
-          i === feature.properties.mileData.length - 1
-            ? feature.properties.coordTimes.length - 1
-            : // otherwise its the next, since mileData[0].index is 0
-            feature.properties.mileData[i + 1].index
-          ]
-        ) / 1000;
+  const paces = generatePacesFromGeoJson(geoJson)
 
-      return timeInSeconds;
-    });
+  const startTime: string = geoJson.features[0].properties.pointMetadata[0].time
 
-    const startTime =
-      Date.parse(geoJson.features[0].properties.coordTimes[0]) / 1000;
-    const returnPaces = {
-      L: paces.map((p, i) => ({
-        N: String(
-          // if we are at the beginning give the pace back minus start time
-          i === 0
-            ? p - startTime
-            : // otherwise subtract the previous mile time to get the split of the current mile
-            p - paces[i - 1]
-        )
-      }))
-    };
+  // do a find for location with geo tz
 
-    return returnPaces;
-  };
+  // it returns timezone
 
-  generatePacesFromGeoJson();
+  // make new date object with timezone and pass to upload
 
   return await uploadPlan(
     geoJson,
-    generatePacesFromGeoJson(),
+    paces,
     userId,
     planName,
-    args.gpxId
+    args.gpxId,
+    startTime
   );
 };
 
@@ -193,7 +167,8 @@ const uploadPlan = async (
   paces: AttributeValue,
   userId: string,
   planName: string,
-  gpxId: string
+  gpxId: string,
+  startTime: string
 ) => {
   try {
     const { pointsPerMile } = makeProfilePoints({ geoJson });
@@ -232,7 +207,6 @@ const uploadPlan = async (
 
     const mileDataAttribute = {
       L: geoJson.features[0].properties.mileData.map((dataItem, i) => {
-        console.log(dataItem, '<< dataItem')
         return ({
           M: {
             elevationGain: { N: dataItem.elevationGain!.toString() },
@@ -250,6 +224,8 @@ const uploadPlan = async (
 
     const { Key } = bucketParams;
 
+    console.log(startTime, '<< startTime')
+
     const command = new PutItemCommand({
       // TableName: process.env.DYNAMODB_TABLE_NAME,
       TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -257,7 +233,7 @@ const uploadPlan = async (
         BucketKey: { S: Key },
         UserId: { S: userId },
         Name: { S: planName },
-        StartTime: { N: String(0) }, //7am base start. dynamo requires numbers to be passed as strings
+        StartTime: { S: startTime },
         MileData: mileDataAttribute,
         Paces: paces,
         LastMileDistance: {
