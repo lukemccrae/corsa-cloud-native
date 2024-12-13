@@ -2,7 +2,6 @@ import { stravaGetHttpClient } from '../../clients/httpClient';
 import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
-const { find } = require('geo-tz')
 
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { CreatedPlan, } from '../types';
@@ -21,6 +20,7 @@ import { gpxToGeoJson } from './gpxGeoJson.service'
 import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
 import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
+import { retrieveTimezone } from './timezone.service';
 interface CreatePlanProps {
   activityId: string;
   token: string;
@@ -85,82 +85,21 @@ export const createPlanFromGeoJson = async (
 
   const paces = generatePacesFromGeoJson(geoJson)
 
-  const startTime: string = geoJson.features[0].properties.pointMetadata[0].time
+  const startTimeInUTC: Date = new Date(geoJson.features[0].properties.pointMetadata[0].time)
 
-  // do a find for location with geo tz
-
-  // it returns timezone
-
-  // make new date object with timezone and pass to upload
-
+  // find timezone of GPX so that frontend can perform a conversion
+  const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
+  
   return await uploadPlan(
     geoJson,
     paces,
     userId,
     planName,
     args.gpxId,
-    startTime
+    startTimeInUTC,
+    timezone
   );
 };
-
-// export const createPlanFromActivity = async (
-//   props: CreatePlanProps
-// ): Promise<CreatedPlan> => {
-//   const { token, userId, planName } = props;
-//   const url = `https://www.strava.com/api/v3/activities/
-//     ${props.activityId}/streams?keys=latlng,time,altitude&key_by_type=true`;
-
-//   try {
-//     const latLngAltitudeTimeStream: ActivityStreamData =
-//       await stravaGetHttpClient({ token, url });
-
-//     // to run this locally use this mock
-//     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
-
-//     // need to split out mile index code
-//     const { featureCollection } = makeGeoJson(
-//       // These casts could be folly
-//       latLngAltitudeTimeStream.latlng.data as [LatLng],
-//       latLngAltitudeTimeStream.altitude.data as Altitude
-//     );
-
-//     const { geoJson } = makeMileData(featureCollection);
-
-//     const generatePacesFromTimeSteam = () => {
-//       const paces = geoJson.features[0].properties.mileData.map((m, i) => {
-//         return latLngAltitudeTimeStream.time.data[
-//           // if i is the last, make it the end of the array
-//           i === geoJson.features[0].properties.mileData.length - 1
-//             ? latLngAltitudeTimeStream.time.data.length - 1
-//             : // otherwise its the next. index is the BEGINNING point of the mile and here i need the end
-//             geoJson.features[0].properties.mileData[i + 1].index
-//         ];
-//       });
-
-//       const returnPaces = {
-//         L: paces.map((p, i) => ({
-//           N: String(i === 0 ? p : p - paces[i - 1])
-//         }))
-//       };
-
-//       console.log(returnPaces, '<< returnPaces');
-
-//       return returnPaces;
-//     };
-
-//     console.log(generatePacesFromTimeSteam(), '<< generatePacesFromTimeSteam');
-
-//     return await uploadPlan(
-//       geoJson,
-//       generatePacesFromTimeSteam(),
-//       userId,
-//       planName,
-//     );
-//   } catch (e) {
-//     console.log(e);
-//     return { success: false };
-//   }
-// };
 
 const uploadPlan = async (
   geoJson: FeatureCollectionBAD,
@@ -168,7 +107,8 @@ const uploadPlan = async (
   userId: string,
   planName: string,
   gpxId: string,
-  startTime: string
+  startTime: Date,
+  timezone: string
 ) => {
   try {
     const { pointsPerMile } = makeProfilePoints({ geoJson });
@@ -224,8 +164,6 @@ const uploadPlan = async (
 
     const { Key } = bucketParams;
 
-    console.log(startTime, '<< startTime')
-
     const command = new PutItemCommand({
       // TableName: process.env.DYNAMODB_TABLE_NAME,
       TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -233,7 +171,8 @@ const uploadPlan = async (
         BucketKey: { S: Key },
         UserId: { S: userId },
         Name: { S: planName },
-        StartTime: { S: startTime },
+        StartTime: { S: String(startTime) },
+        TimeZone: { S: timezone },
         MileData: mileDataAttribute,
         Paces: paces,
         LastMileDistance: {

@@ -79,6 +79,7 @@ type Plan {
   name: String
   startTime: String # start time of the event
   mileData: [MileData] # an array of mile information
+  timezone: String
   lastMileDistance: Float
   distanceInMiles: Int
   gainInMeters: Int

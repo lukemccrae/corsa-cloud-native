@@ -45,6 +45,9 @@ type DbPlan = {
   StartTime: {
     S: String;
   };
+  TimeZone: {
+    S: String;
+  };
   Name: {
     S: String;
   };
@@ -117,6 +120,7 @@ const parsePlans = (plans: [DbPlan]) => {
     userId: plan.UserId.S,
     name: plan.Name.S,
     startTime: plan.StartTime.S,
+    timezone: plan.TimeZone?.S,
     mileData: plan.MileData.L.map((data, i) => {
 
       duration += parseFloat(plan.Paces.L[i].N.toString());
@@ -172,7 +176,6 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
     
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
-    console.log(plans, '<< query plans')
 
     return parsePlans(plans)
   } catch (e) {
