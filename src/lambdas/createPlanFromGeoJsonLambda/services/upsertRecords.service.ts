@@ -21,6 +21,11 @@ import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
 import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
 import { retrieveTimezone } from './timezone.service';
+import {gpx2} from './tmpgpx2'
+import {gpx} from './tmpgpx'
+import {gpx3} from './tmpgpx3'
+
+
 interface CreatePlanProps {
   activityId: string;
   token: string;
@@ -67,31 +72,34 @@ export const createPlanFromGeoJson = async (
   const streamString = await response.Body.transformToString('utf-8');
 
   const geoJsonString = gpxToGeoJson(streamString)
+  // const geoJsonString = gpxToGeoJson(gpx3)
+
 
   const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
 
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
 
-  const reducedPoints = shortenIteratively(featureCollection)
-
   // TODO: These functions are using '../../types'
   // which is a type file i made
   // IT IS WRONG
   // I should be using the types generated from the schema in '../types'
-  const geoJsonWithMileIndices = makeMileIndices(reducedPoints);
+  const geoJsonWithMileIndices = makeMileIndices(featureCollection);
 
   const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
+
   const paces = generatePacesFromGeoJson(geoJson)
+
 
   const startTimeInUTC: Date = new Date(geoJson.features[0].properties.pointMetadata[0].time)
 
   // find timezone of GPX so that frontend can perform a conversion
   const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
-  
+  const reducedPoints = shortenIteratively(geoJson)
+
   return await uploadPlan(
-    geoJson,
+    reducedPoints,
     paces,
     userId,
     planName,
