@@ -56,23 +56,23 @@ export const createPlanFromGeoJson = async (
 ): Promise<CreatedPlan> => {
 
   // retrieve gpx from s3 with provided uuid
-  // const s3Client = new S3Client({ region: 'us-west-1' });
+  const s3Client = new S3Client({ region: 'us-west-1' });
 
-  // const command = new GetObjectCommand({
-  //   Bucket: process.env.GEO_JSON_BUCKET_NAME,
+  const command = new GetObjectCommand({
+    Bucket: process.env.GEO_JSON_BUCKET_NAME,
 
-  //   Key: args.gpxId
-  // });
+    Key: args.gpxId
+  });
 
-  // const response = await s3Client.send(command);s
+  const response = await s3Client.send(command);
 
-  // if (!response.Body) throw new Error('Failed to retrieve GPX from S3');
+  if (!response.Body) throw new Error('Failed to retrieve GPX from S3');
 
   // turn retrieved GPX into a geoJSON
-  // const streamString = await response.Body.transformToString('utf-8');
+  const streamString = await response.Body.transformToString('utf-8');
 
-  // const geoJsonString = gpxToGeoJson(streamString)
-  const geoJsonString = gpxToGeoJson(gpx3)
+  const geoJsonString = gpxToGeoJson(streamString)
+  // const geoJsonString = gpxToGeoJson(gpx3)
 
 
   const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
@@ -80,32 +80,33 @@ export const createPlanFromGeoJson = async (
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
 
-  const reducedPoints = shortenIteratively(featureCollection)
-
   // TODO: These functions are using '../../types'
   // which is a type file i made
   // IT IS WRONG
   // I should be using the types generated from the schema in '../types'
-  const geoJsonWithMileIndices = makeMileIndices(reducedPoints);
+  const geoJsonWithMileIndices = makeMileIndices(featureCollection);
 
   const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
-  const paces = generatePacesFromGeoJson(geoJson) // TODO: type this
+
+  const paces = generatePacesFromGeoJson(geoJson)
+
 
   const startTimeInUTC: Date = new Date(geoJson.features[0].properties.pointMetadata[0].time)
 
   // find timezone of GPX so that frontend can perform a conversion
   const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
+  const reducedPoints = shortenIteratively(geoJson)
 
-  // return await uploadPlan(
-  //   geoJson,
-  //   paces,
-  //   userId,
-  //   planName,
-  //   args.gpxId,
-  //   startTimeInUTC,
-  //   timezone
-  // );
+  return await uploadPlan(
+    reducedPoints,
+    paces,
+    userId,
+    planName,
+    args.gpxId,
+    startTimeInUTC,
+    timezone
+  );
 };
 
 const uploadPlan = async (
