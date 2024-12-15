@@ -1,4 +1,3 @@
-import { MileData } from '../../../types';
 import { FeatureCollectionBAD } from '../../types';
 
 interface MakeProfilePoints {

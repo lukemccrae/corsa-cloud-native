@@ -73,17 +73,20 @@ export const createPlanFromGeoJson = async (
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
 
-  const reducedPoints = shortenIteratively(featureCollection)
 
   // TODO: These functions are using '../../types'
   // which is a type file i made
   // IT IS WRONG
   // I should be using the types generated from the schema in '../types'
-  const geoJsonWithMileIndices = makeMileIndices(reducedPoints);
+  const geoJsonWithMileIndices = makeMileIndices(featureCollection);
 
   const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
+  const { pointsPerMile } = makeProfilePoints({ geoJson });
+
   const paces = generatePacesFromGeoJson(geoJson)
+
+  const reducedPoints: FeatureCollectionBAD = shortenIteratively(featureCollection)
 
   const startTimeInUTC: Date = new Date(geoJson.features[0].properties.pointMetadata[0].time)
 
@@ -91,13 +94,14 @@ export const createPlanFromGeoJson = async (
   const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
   
   return await uploadPlan(
-    geoJson,
+    reducedPoints,
     paces,
     userId,
     planName,
     args.gpxId,
     startTimeInUTC,
-    timezone
+    timezone,
+    pointsPerMile
   );
 };
 
@@ -108,10 +112,10 @@ const uploadPlan = async (
   planName: string,
   gpxId: string,
   startTime: Date,
-  timezone: string
+  timezone: string,
+  pointsPerMile: number[][]
 ) => {
   try {
-    const { pointsPerMile } = makeProfilePoints({ geoJson });
 
     const s3 = new S3({ region: 'us-west-1' });
 
