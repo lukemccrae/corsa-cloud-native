@@ -21,6 +21,11 @@ import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
 import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
 import { retrieveTimezone } from './timezone.service';
+import {gpx2} from './tmpgpx2'
+import {gpx} from './tmpgpx'
+import {gpx3} from './tmpgpx3'
+
+
 interface CreatePlanProps {
   activityId: string;
   token: string;
@@ -51,22 +56,24 @@ export const createPlanFromGeoJson = async (
 ): Promise<CreatedPlan> => {
 
   // retrieve gpx from s3 with provided uuid
-  const s3Client = new S3Client({ region: 'us-west-1' });
+  // const s3Client = new S3Client({ region: 'us-west-1' });
 
-  const command = new GetObjectCommand({
-    Bucket: process.env.GEO_JSON_BUCKET_NAME,
+  // const command = new GetObjectCommand({
+  //   Bucket: process.env.GEO_JSON_BUCKET_NAME,
 
-    Key: args.gpxId
-  });
+  //   Key: args.gpxId
+  // });
 
-  const response = await s3Client.send(command);
+  // const response = await s3Client.send(command);s
 
-  if (!response.Body) throw new Error('Failed to retrieve GPX from S3');
+  // if (!response.Body) throw new Error('Failed to retrieve GPX from S3');
 
   // turn retrieved GPX into a geoJSON
-  const streamString = await response.Body.transformToString('utf-8');
+  // const streamString = await response.Body.transformToString('utf-8');
 
-  const geoJsonString = gpxToGeoJson(streamString)
+  // const geoJsonString = gpxToGeoJson(streamString)
+  const geoJsonString = gpxToGeoJson(gpx3)
+
 
   const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
 
@@ -83,22 +90,22 @@ export const createPlanFromGeoJson = async (
 
   const { geoJson } = makeMileData(geoJsonWithMileIndices);
 
-  const paces = generatePacesFromGeoJson(geoJson)
+  const paces = generatePacesFromGeoJson(geoJson) // TODO: type this
 
   const startTimeInUTC: Date = new Date(geoJson.features[0].properties.pointMetadata[0].time)
 
   // find timezone of GPX so that frontend can perform a conversion
   const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
-  
-  return await uploadPlan(
-    geoJson,
-    paces,
-    userId,
-    planName,
-    args.gpxId,
-    startTimeInUTC,
-    timezone
-  );
+
+  // return await uploadPlan(
+  //   geoJson,
+  //   paces,
+  //   userId,
+  //   planName,
+  //   args.gpxId,
+  //   startTimeInUTC,
+  //   timezone
+  // );
 };
 
 const uploadPlan = async (

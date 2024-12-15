@@ -73,10 +73,10 @@ const removePoints = (map: LatLngAltitude[], coordTimes: string[], tolerance: nu
         pointDistance += pointSegmentLength([map[i], map[i + 1]])
 
         // Remove the current element from the Set during iteration
-        if (pointDistance > 20) {
-            collinearIndices.delete(current);
-            pointDistance = 0;
-        }
+        // if (pointDistance > 20) {
+        //     collinearIndices.delete(current);
+        //     pointDistance = 0;
+        // }
     }
 
     // Filter out collinear points
@@ -108,6 +108,13 @@ export const shortenIteratively = (featureCollection: FeatureCollectionBAD) => {
         // check for tolerable distance difference between shortened route and original
         // increase comparison value to decrease points
         // decrease comparison value to increase route accuracy
+        console.log(ratio, 'ratio')
+        console.log(coordTimes.length, '<< original point length')
+        console.log(shortenedPoints.length, '<< shortened points')
+        console.log(originalLength, '<< originalLength')
+        console.log(shortenedLength, '<< shortenedLength')
+
+        console.log(iterations, '<< iterations')
         if (ratio > .3) {
             tolerance /= 10;
             iterations++
@@ -116,7 +123,10 @@ export const shortenIteratively = (featureCollection: FeatureCollectionBAD) => {
             featureCollection.features[0].properties.coordTimes = shortenedCoordTimes
             break;
         }
+
     }
+
+
 
     return featureCollection;
 }
