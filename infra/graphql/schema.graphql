@@ -14,7 +14,7 @@ type Query {
 }
 
 type Mutation {
-  updatePlanById(planInput: PlanInput!): UpdatedPlan! # do next
+  updatePlanById(planInput: PlanInput!): UpdatedPlan!
   createPlanFromActivity(
     activityId: ID!
     token: String!
@@ -23,6 +23,8 @@ type Mutation {
   ): CreatedPlan!
   createPlanFromGeoJson(gpxId: ID!, userId: ID!): CreatedPlan!
   deletePlanById(bucketKey: ID!, userId: String!): DeletePlan!
+  updateArticleByPlanId(
+    bucketKey: ID!, userId: String!, articleContent: String!): UpdatedArticle!
 }
 
 type FeatureCollection {
@@ -86,6 +88,7 @@ type Plan {
   lossInMeters: Int
   durationInSeconds: Int
   gap: Int
+  articleContent: String
 }
 
 type S3MileData {
@@ -112,6 +115,10 @@ type UpdatedPlan {
   success: Boolean!
 }
 
+type UpdatedArticle {
+  success: Boolean!
+}
+
 type DeletePlan {
   success: Boolean!
 }
@@ -126,4 +133,5 @@ input PlanInput {
   planName: String!
   startTime: Int! # start time of the event
   paces: [Int!]!
+  articleContent: String!
 }

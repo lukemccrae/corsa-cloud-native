@@ -3,7 +3,7 @@ import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { type CreatedPlan, UpdatedPlan, FeatureCollection } from '../types';
+import { type CreatedPlan, UpdatedPlan, FeatureCollection, UpdatedArticle } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import {
   AttributeValue,
@@ -38,6 +38,13 @@ interface UpdatePlanProps {
   startTime: number;
   planName: string;
   paces: number[];
+  articleContent: string;
+}
+
+interface UpdateArticleProps {
+  bucketKey: string;
+  userId: string;
+  articleContent: string;
 }
 
 interface createPlanFromGeoJsonArgs {
@@ -47,10 +54,50 @@ interface createPlanFromGeoJsonArgs {
 
 const client = new DynamoDBClient({ region: 'us-west-1' });
 
+export const updateArticleByPlanId = async (
+  articleInputArgs: UpdateArticleProps
+): Promise<UpdatedArticle> => {
+  const { userId, bucketKey, articleContent } = articleInputArgs;
+
+  const command = new UpdateItemCommand({
+    TableName: process.env.DYNAMODB_TABLE_NAME,
+    Key: {
+      UserId: { S: userId },
+      BucketKey: { S: bucketKey }
+    },
+    // This is analogous to a SQL statement
+    UpdateExpression:
+      'SET #ArticleContent = :articleContent',
+    // This ties the passed values to the DB variables
+    ExpressionAttributeNames: {
+      '#ArticleContent': 'ArticleContent'
+    },
+    // This passes the values to the write operation
+    ExpressionAttributeValues: {
+      ':articleContent': { S: articleContent }
+    }
+  });
+
+  try {
+    // console.log(command, '<< command')
+    const response = await client.send(command);
+    if (response.$metadata.httpStatusCode === 200)
+      return {
+        success: true
+      };
+    throw new Error('Updating the article failed');
+  } catch (e) {
+    console.log(e, '<< error');
+    return {
+      success: false
+    };
+  }
+}
+
 export const updatePlanById = async (
   planInputArgs: UpdatePlanProps
 ): Promise<UpdatedPlan> => {
-  const { startTime, userId, planName, sortKey, paces } = planInputArgs;
+  const { startTime, userId, planName, sortKey, paces, articleContent } = planInputArgs;
 
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -60,18 +107,18 @@ export const updatePlanById = async (
     },
     // This is analogous to a SQL statement
     UpdateExpression:
-      'SET #Name = :name, #StartTime = :startTime, #Paces = :paces',
+      'SET #Name = :name, #StartTime = :startTime, #Paces = :paces, #ArticleContent = :articleContent',
     // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
       '#Name': 'Name',
       '#StartTime': 'StartTime',
-      '#Paces': 'Paces'
+      // '#Paces': 'Paces',
     },
     // This passes the values to the write operation
     ExpressionAttributeValues: {
       ':name': { S: planName },
       ':startTime': { N: String(startTime) },
-      ':paces': { L: paces.map((item) => ({ N: String(item) })) }
+      // ':paces': { L: paces.map((item) => ({ N: String(item) })) }, // paces not changeable for now
     }
   });
 
@@ -172,65 +219,6 @@ export const createPlanFromGeoJson = async (
     args.gpxId
   );
 };
-
-// export const createPlanFromActivity = async (
-//   props: CreatePlanProps
-// ): Promise<CreatedPlan> => {
-//   const { token, userId, planName } = props;
-//   const url = `https://www.strava.com/api/v3/activities/
-//     ${props.activityId}/streams?keys=latlng,time,altitude&key_by_type=true`;
-
-//   try {
-//     const latLngAltitudeTimeStream: ActivityStreamData =
-//       await stravaGetHttpClient({ token, url });
-
-//     // to run this locally use this mock
-//     // const latLngAltitudeStream = JSON.parse(mockActivityStream);
-
-//     // need to split out mile index code
-//     const { featureCollection } = makeGeoJson(
-//       // These casts could be folly
-//       latLngAltitudeTimeStream.latlng.data as [LatLng],
-//       latLngAltitudeTimeStream.altitude.data as Altitude
-//     );
-
-//     const { geoJson } = makeMileData(featureCollection);
-
-//     const generatePacesFromTimeSteam = () => {
-//       const paces = geoJson.features[0].properties.mileData.map((m, i) => {
-//         return latLngAltitudeTimeStream.time.data[
-//           // if i is the last, make it the end of the array
-//           i === geoJson.features[0].properties.mileData.length - 1
-//             ? latLngAltitudeTimeStream.time.data.length - 1
-//             : // otherwise its the next. index is the BEGINNING point of the mile and here i need the end
-//             geoJson.features[0].properties.mileData[i + 1].index
-//         ];
-//       });
-
-//       const returnPaces = {
-//         L: paces.map((p, i) => ({
-//           N: String(i === 0 ? p : p - paces[i - 1])
-//         }))
-//       };
-
-//       console.log(returnPaces, '<< returnPaces');
-
-//       return returnPaces;
-//     };
-
-//     console.log(generatePacesFromTimeSteam(), '<< generatePacesFromTimeSteam');
-
-//     return await uploadPlan(
-//       geoJson,
-//       generatePacesFromTimeSteam(),
-//       userId,
-//       planName,
-//     );
-//   } catch (e) {
-//     console.log(e);
-//     return { success: false };
-//   }
-// };
 
 const uploadPlan = async (
   geoJson: FeatureCollectionBAD,

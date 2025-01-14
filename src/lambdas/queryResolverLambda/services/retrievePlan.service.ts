@@ -54,6 +54,9 @@ type DbPlan = {
   LastMileDistance: {
     N: Number;
   };
+  ArticleContent: {
+    S: String;
+  }
 };
 
 export const getPlanById = async (args: any): Promise<any> => {
@@ -117,6 +120,7 @@ const parsePlans = (plans: [DbPlan]) => {
   let duration = 0;
   return plans.map((plan: DbPlan) => ({
     id: plan.BucketKey.S,
+    articleContent: plan.ArticleContent.S,
     userId: plan.UserId.S,
     name: plan.Name.S,
     startTime: plan.StartTime.S,

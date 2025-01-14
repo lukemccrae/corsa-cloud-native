@@ -395,5 +395,10 @@ export class CorsaBackendStack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'updatePlanById'
     });
+
+    mutationDataSource.createResolver('updateArticleByPlanId', {
+      typeName: 'Mutation',
+      fieldName: 'updateArticleByPlanId'
+    });
   }
 }

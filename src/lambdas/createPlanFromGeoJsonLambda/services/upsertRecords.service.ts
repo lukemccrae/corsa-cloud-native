@@ -168,6 +168,8 @@ const uploadPlan = async (
 
     const { Key } = bucketParams;
 
+    const newLexicalState = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"New Article","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`
+
     const command = new PutItemCommand({
       // TableName: process.env.DYNAMODB_TABLE_NAME,
       TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -181,6 +183,9 @@ const uploadPlan = async (
         Paces: paces,
         LastMileDistance: {
           N: String(geoJson.features[0].properties.lastMileDistance)
+        },
+        ArticleContent: {
+          S: newLexicalState
         }
       }
     });

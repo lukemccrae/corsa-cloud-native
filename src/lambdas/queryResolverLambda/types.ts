@@ -88,6 +88,7 @@ export type Mutation = {
   createPlanFromActivity: CreatedPlan;
   createPlanFromGeoJson: CreatedPlan;
   deletePlanById: DeletePlan;
+  updateArticleByPlanId: UpdatedArticle;
   updatePlanById: UpdatedPlan;
 };
 
@@ -112,12 +113,20 @@ export type MutationDeletePlanByIdArgs = {
 };
 
 
+export type MutationUpdateArticleByPlanIdArgs = {
+  articleContent: Scalars['String']['input'];
+  bucketKey: Scalars['ID']['input'];
+  userId: Scalars['String']['input'];
+};
+
+
 export type MutationUpdatePlanByIdArgs = {
   planInput: PlanInput;
 };
 
 export type Plan = {
   __typename?: 'Plan';
+  articleContent?: Maybe<Scalars['String']['output']>;
   distanceInMiles?: Maybe<Scalars['Int']['output']>;
   durationInSeconds?: Maybe<Scalars['Int']['output']>;
   gainInMeters?: Maybe<Scalars['Int']['output']>;
@@ -133,6 +142,7 @@ export type Plan = {
 };
 
 export type PlanInput = {
+  articleContent: Scalars['String']['input'];
   paces: Array<Scalars['Int']['input']>;
   planName: Scalars['String']['input'];
   sortKey: Scalars['String']['input'];
@@ -195,6 +205,11 @@ export type S3MileData = {
   elevationLoss: Scalars['Float']['output'];
   index: Scalars['Int']['output'];
   stopTime: Scalars['Int']['output'];
+};
+
+export type UpdatedArticle = {
+  __typename?: 'UpdatedArticle';
+  success: Scalars['Boolean']['output'];
 };
 
 export type UpdatedPlan = {
@@ -293,6 +308,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  UpdatedArticle: ResolverTypeWrapper<UpdatedArticle>;
   UpdatedPlan: ResolverTypeWrapper<UpdatedPlan>;
 };
 
@@ -318,6 +334,7 @@ export type ResolversParentTypes = {
   Query: {};
   S3MileData: S3MileData;
   String: Scalars['String']['output'];
+  UpdatedArticle: UpdatedArticle;
   UpdatedPlan: UpdatedPlan;
 };
 
@@ -388,10 +405,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
   createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
+  updateArticleByPlanId?: Resolver<ResolversTypes['UpdatedArticle'], ParentType, ContextType, RequireFields<MutationUpdateArticleByPlanIdArgs, 'articleContent' | 'bucketKey' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
+  articleContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   distanceInMiles?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   durationInSeconds?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   gainInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -432,6 +451,11 @@ export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UpdatedArticleResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdatedArticle'] = ResolversParentTypes['UpdatedArticle']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UpdatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdatedPlan'] = ResolversParentTypes['UpdatedPlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -451,6 +475,7 @@ export type Resolvers<ContextType = any> = {
   PointMetadata?: PointMetadataResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   S3MileData?: S3MileDataResolvers<ContextType>;
+  UpdatedArticle?: UpdatedArticleResolvers<ContextType>;
   UpdatedPlan?: UpdatedPlanResolvers<ContextType>;
 };
 
