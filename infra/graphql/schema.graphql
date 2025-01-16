@@ -92,6 +92,7 @@ type Plan {
   durationInSeconds: Int
   gap: Int
   articleContent: String
+  published: Boolean
 }
 
 type S3MileData {

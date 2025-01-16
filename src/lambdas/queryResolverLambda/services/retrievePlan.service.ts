@@ -57,6 +57,9 @@ type DbPlan = {
   };
   ArticleContent: {
     S: String;
+  };
+  Published: {
+    BOOL: Boolean
   }
 };
 
@@ -75,7 +78,6 @@ export const getPublishedPlans = async (): Promise<any> => {
   try {
     const planResults = await client.send(scanCommand);
     if (planResults.Items === undefined) return [];
-    console.log(planResults.Items)
 
     // console.log(JSON.stringify(planResults.Items, null, 2), '<< results')
     // const plans = planResults.Items?.map(item => unmarshall(item)) as DbPlan[];
@@ -183,6 +185,7 @@ const parsePlans = (plans: DbPlan[]) => {
     gainInMeters: Math.round(cumulativeGain),
     lossInMeters: Math.round(cumulativeLoss),
     durationInSeconds: Math.round(duration),
+    published: plan.Published.BOOL
   }));
 }
 
