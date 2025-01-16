@@ -1,4 +1,5 @@
-import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 // dotenv necessary here only for local development with `yarn ll`
 // this file is referencing environment variables defined in CDK
 // the lambda runtime has dotenv in its environment so this may be redundant,
@@ -59,6 +60,33 @@ type DbPlan = {
   }
 };
 
+export const getPublishedPlans = async (): Promise<any> => {
+  const client = new DynamoDBClient({ region: 'us-west-1' });
+  const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+
+  const scanCommand = new ScanCommand({
+    TableName: tableName,
+    FilterExpression: 'Published = :published',
+    ExpressionAttributeValues: {
+      ':published': { BOOL: true }
+    }
+  });
+
+  try {
+    const planResults = await client.send(scanCommand);
+    if (planResults.Items === undefined) return [];
+    console.log(planResults.Items)
+
+    // console.log(JSON.stringify(planResults.Items, null, 2), '<< results')
+    // const plans = planResults.Items?.map(item => unmarshall(item)) as DbPlan[];
+    const result = parsePlans(planResults.Items as unknown as DbPlan[])
+
+    return result;
+  } catch (e) {
+    console.log(e, '<< error getPublishedPlans');
+  }
+}
+
 export const getPlanById = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
   const { planId, userId } = args;
@@ -114,7 +142,7 @@ const calcLastMileGap = (pace: number, gain: number, loss: number, lmd: number) 
 }
 
 // big scary
-const parsePlans = (plans: [DbPlan]) => {
+const parsePlans = (plans: DbPlan[]) => {
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;

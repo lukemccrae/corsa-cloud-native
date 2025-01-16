@@ -3,8 +3,7 @@ import {
   getActivities
 } from './services/retrieveActivity.service';
 import { getGeoJsonBySortKey } from './services/retrieveGeoJson.service';
-import { getPlansByUserId } from './services/retrievePlan.service';
-import { getPlanById } from './services/retrievePlan.service';
+import { getPlanById, getPublishedPlans, getPlansByUserId } from './services/retrievePlan.service';
 import dotenv from 'dotenv';
 dotenv.config({path: '../.env'});
 
@@ -25,7 +24,9 @@ export const handler = async (event: any, context: any): Promise<any> => {
         case 'getGeoJsonBySortKey':
           return await getGeoJsonBySortKey(currentEvent.arguments);
         case 'getPlanById':
-          return await getPlanById(currentEvent.arguments)
+          return await getPlanById(currentEvent.arguments);
+        case 'getPublishedPlans':
+          return await getPublishedPlans(); 
       }
     }
   } catch (e) {

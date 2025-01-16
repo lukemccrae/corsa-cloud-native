@@ -88,6 +88,7 @@ export type Mutation = {
   createPlanFromActivity: CreatedPlan;
   createPlanFromGeoJson: CreatedPlan;
   deletePlanById: DeletePlan;
+  publishPlan: PublishedPlan;
   updateArticleByPlanId: UpdatedArticle;
   updatePlanById: UpdatedPlan;
 };
@@ -109,6 +110,13 @@ export type MutationCreatePlanFromGeoJsonArgs = {
 
 export type MutationDeletePlanByIdArgs = {
   bucketKey: Scalars['ID']['input'];
+  userId: Scalars['String']['input'];
+};
+
+
+export type MutationPublishPlanArgs = {
+  bucketKey: Scalars['ID']['input'];
+  published: Scalars['Boolean']['input'];
   userId: Scalars['String']['input'];
 };
 
@@ -159,6 +167,11 @@ export type PointMetadata = {
   time?: Maybe<Scalars['String']['output']>;
 };
 
+export type PublishedPlan = {
+  __typename?: 'PublishedPlan';
+  success: Scalars['Boolean']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   getActivities: Array<Maybe<Activity>>;
@@ -166,6 +179,7 @@ export type Query = {
   getGeoJsonBySortKey: FeatureCollection;
   getPlanById: Plan;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
+  getPublishedPlans?: Maybe<Array<Maybe<Plan>>>;
 };
 
 
@@ -305,6 +319,7 @@ export type ResolversTypes = {
   Plan: ResolverTypeWrapper<Plan>;
   PlanInput: PlanInput;
   PointMetadata: ResolverTypeWrapper<PointMetadata>;
+  PublishedPlan: ResolverTypeWrapper<PublishedPlan>;
   Query: ResolverTypeWrapper<{}>;
   S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -331,6 +346,7 @@ export type ResolversParentTypes = {
   Plan: Plan;
   PlanInput: PlanInput;
   PointMetadata: PointMetadata;
+  PublishedPlan: PublishedPlan;
   Query: {};
   S3MileData: S3MileData;
   String: Scalars['String']['output'];
@@ -405,6 +421,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
   createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
+  publishPlan?: Resolver<ResolversTypes['PublishedPlan'], ParentType, ContextType, RequireFields<MutationPublishPlanArgs, 'bucketKey' | 'published' | 'userId'>>;
   updateArticleByPlanId?: Resolver<ResolversTypes['UpdatedArticle'], ParentType, ContextType, RequireFields<MutationUpdateArticleByPlanIdArgs, 'articleContent' | 'bucketKey' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
@@ -435,12 +452,18 @@ export type PointMetadataResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type PublishedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublishedPlan'] = ResolversParentTypes['PublishedPlan']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
   getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
   getGeoJsonBySortKey?: Resolver<ResolversTypes['FeatureCollection'], ParentType, ContextType, RequireFields<QueryGetGeoJsonBySortKeyArgs, 'sortKey'>>;
   getPlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<QueryGetPlanByIdArgs, 'planId' | 'userId'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
+  getPublishedPlans?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType>;
 };
 
 export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['S3MileData'] = ResolversParentTypes['S3MileData']> = {
@@ -473,6 +496,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;
   PointMetadata?: PointMetadataResolvers<ContextType>;
+  PublishedPlan?: PublishedPlanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   S3MileData?: S3MileDataResolvers<ContextType>;
   UpdatedArticle?: UpdatedArticleResolvers<ContextType>;

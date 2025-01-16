@@ -381,9 +381,19 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'getPlanById'
     });
 
+    queryDataSource.createResolver('getPublishedPlans', {
+      typeName: 'Query',
+      fieldName: 'getPublishedPlans'
+    });
+
     mutationDataSource.createResolver('createPlanFromActivity', {
       typeName: 'Mutation',
       fieldName: 'createPlanFromActivity'
+    });
+
+    mutationDataSource.createResolver('publishPlan', {
+      typeName: 'Mutation',
+      fieldName: 'publishPlan'
     });
 
     mutationDataSource.createResolver('deletePlanById', {

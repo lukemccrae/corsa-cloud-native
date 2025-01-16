@@ -186,6 +186,9 @@ const uploadPlan = async (
         },
         ArticleContent: {
           S: newLexicalState
+        },
+        Published: {
+          BOOL: false
         }
       }
     });
