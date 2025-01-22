@@ -19,6 +19,42 @@ export class CorsaBackendStack extends cdk.Stack {
     
     const userPool = cognito.UserPool.fromUserPoolId(this, 'CorsaUserPool', 'us-west-1_S7GEufYHG');
 
+    const userPoolClient = new cognito.UserPoolClient(this, 'MyUserPoolClient', {
+      userPool,
+    });
+
+    const identityPool = new cognito.CfnIdentityPool(this, 'CorsaIdentityPool', {
+      allowUnauthenticatedIdentities: true, // Enable anonymous access
+      cognitoIdentityProviders: [
+        {
+          clientId: userPoolClient.userPoolClientId, // App Client ID
+          providerName: `cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`, // User Pool provider name
+        },
+      ],
+    });
+
+    const unauthenticatedRole = new iam.Role(this, 'UnauthenticatedRole', {
+      assumedBy: new iam.FederatedPrincipal(
+        'cognito-identity.amazonaws.com',
+        {
+          StringEquals: {
+            'cognito-identity.amazonaws.com:aud': identityPool.ref,
+          },
+          'ForAnyValue:StringLike': {
+            'cognito-identity.amazonaws.com:amr': 'unauthenticated',
+          },
+        },
+        'sts:AssumeRoleWithWebIdentity'
+      ),
+    });
+
+    new cognito.CfnIdentityPoolRoleAttachment(this, 'MyIdentityPoolRoleAttachment', {
+      identityPoolId: identityPool.ref,
+      roles: {
+        unauthenticated: unauthenticatedRole.roleArn,
+      },
+    });
+
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -174,21 +210,32 @@ export class CorsaBackendStack extends cdk.Stack {
       allowMethods: apiGateway.Cors.ALL_METHODS // Allow all HTTP methods
     };
 
-    // Create a GraphQL API
     const api = new appsync.GraphqlApi(this, 'CorsaGraphAPI', {
       name: 'corsa-graphql-api',
       ...corsOptions,
       schema: appsync.SchemaFile.fromAsset('infra/graphql/schema.graphql'), // Replace with the path to your GraphQL schema file
       authorizationConfig: {
         defaultAuthorization: {
-          authorizationType: appsync.AuthorizationType.USER_POOL,
-          userPoolConfig: {
-            userPool: userPool,
-          }
-
+          authorizationType: appsync.AuthorizationType.IAM,  // Change this to IAM for unauthenticated access
         },
+        additionalAuthorizationModes: [
+          {
+            authorizationType: appsync.AuthorizationType.USER_POOL,  // Keep User Pool for authenticated access
+            userPoolConfig: {
+              userPool: userPool,  // Your Cognito User Pool
+            },
+          },
+        ],
       },
     });
+
+    unauthenticatedRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['appsync:GraphQL'],
+        resources: [`${api.arn}/types/Query/fields/getPublishedPlans`],
+        effect: iam.Effect.ALLOW,
+      })
+    );
 
     const cloudWatchLogsPolicy = new iam.PolicyDocument({
       statements: [
@@ -292,7 +339,7 @@ export class CorsaBackendStack extends cdk.Stack {
     utilityLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     presignUrlLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     createPlanFromGeoJsonLambdaRole.attachInlinePolicy(cloudwatchPolicy);
-    openAIassistantLambdaRole.attachInlinePolicy(cloudwatchPolicy)
+    openAIassistantLambdaRole.attachInlinePolicy(cloudwatchPolicy);
 
     geoJsonBucket.grantRead(queryLambdaRole);
 
