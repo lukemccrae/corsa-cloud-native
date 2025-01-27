@@ -58,6 +58,7 @@
     "@aws-cdk/aws-efs:mountTargetOrderInsensitiveLogicalId": true,
     "DYNAMODB_TABLE_NAME": "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC",
     "GEO_JSON_BUCKET_NAME": "corsabackendstack-geojsonbucket37355d9d-yb8me5pyze3i",
+    "USER_TABLE": "UserTable",
     "REGION": "us-west-1",
     "ACCOUNT": "542047678132"
   }
