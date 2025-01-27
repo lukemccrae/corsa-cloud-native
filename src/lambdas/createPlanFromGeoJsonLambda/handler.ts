@@ -14,9 +14,6 @@ export const handler = async (event: any, context: any): Promise<any> => {
   try {
     if (currentEvent.info.parentTypeName === 'Mutation') {
       switch (currentEvent.info.fieldName) {
-        // strava integration not working on new site
-        // case 'createPlanFromActivity':
-        //   return await createPlanFromActivity(event.arguments);
         case 'createPlanFromGeoJson':
           return await createPlanFromGeoJson(currentEvent.arguments);
       }

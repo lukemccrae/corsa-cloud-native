@@ -212,10 +212,6 @@ export class CorsaBackendStack extends cdk.Stack {
 
     const geoJsonBucket = s3.Bucket.fromBucketArn(this, 'geoJsonBucket', `arn:aws:s3:::${geoJsonBucketName}`);
 
-    // when a new item wss://afno5ipvkfamfagfok7ad4qnwm.appsync-realtime-api.us-west-1.amazonaws.com/graphqlis added to the bucket trigger an event and write metadata to dynamo
-    // metadata will be passed along with the file which will be retrieved from the activity
-    // this should include name, date, distance
-
     const corsOptions: apiGateway.CorsOptions = {
       allowOrigins: apiGateway.Cors.ALL_ORIGINS, // Allow requests from any origin
       allowMethods: apiGateway.Cors.ALL_METHODS // Allow all HTTP methods
@@ -421,16 +417,6 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'createPlanFromGeoJson'
     });
 
-    queryDataSource.createResolver('getActivityById', {
-      typeName: 'Query',
-      fieldName: 'getActivityById'
-    });
-
-    queryDataSource.createResolver('getActivities', {
-      typeName: 'Query',
-      fieldName: 'getActivities'
-    });
-
     queryDataSource.createResolver('getPlansByUserId', {
       typeName: 'Query',
       fieldName: 'getPlansByUserId'
@@ -449,11 +435,6 @@ export class CorsaBackendStack extends cdk.Stack {
     queryDataSource.createResolver('getPublishedPlans', {
       typeName: 'Query',
       fieldName: 'getPublishedPlans'
-    });
-
-    mutationDataSource.createResolver('createPlanFromActivity', {
-      typeName: 'Mutation',
-      fieldName: 'createPlanFromActivity'
     });
 
     mutationDataSource.createResolver('publishPlan', {

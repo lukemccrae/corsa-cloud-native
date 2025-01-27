@@ -1,10 +1,7 @@
-import { stravaGetHttpClient } from '../../clients/httpClient';
-import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { type CreatedPlan, UpdatedPlan, FeatureCollection, UpdatedArticle, PublishedPlan } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { type CreatedPlan, UpdatedPlan, UpdatedArticle, PublishedPlan } from '../types';
 import {
   AttributeValue,
   DynamoDBClient,
@@ -12,25 +9,10 @@ import {
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
-import { addPacesToMileData } from '../helpers/paces.helper';
 import {
-  ActivityStreamData,
-  Altitude,
   FeatureCollectionBAD,
-  LatLng
 } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
-import { gpxToGeoJson } from './gpxGeoJson.service'
-import { json } from '../mockJson'
-
-interface CreatePlanProps {
-  activityId: string;
-  token: string;
-  userId: string;
-  planName: string;
-  bucketKey: string;
-  startTime: number;
-}
 
 interface UpdatePlanProps {
   sortKey: string;

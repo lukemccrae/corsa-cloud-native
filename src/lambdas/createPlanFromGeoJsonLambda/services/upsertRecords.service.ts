@@ -1,5 +1,3 @@
-import { stravaGetHttpClient } from '../../clients/httpClient';
-import { makeGeoJson } from '../helpers/geoJson.helper';
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 
@@ -21,22 +19,6 @@ import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
 import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
 import { retrieveTimezone } from './timezone.service';
-interface CreatePlanProps {
-  activityId: string;
-  token: string;
-  userId: string;
-  planName: string;
-  bucketKey: string;
-  startTime: number;
-}
-
-interface UpdatePlanProps {
-  sortKey: string;
-  userId: string;
-  startTime: number;
-  planName: string;
-  paces: number[];
-}
 
 interface createPlanFromGeoJsonArgs {
   gpxId: string;

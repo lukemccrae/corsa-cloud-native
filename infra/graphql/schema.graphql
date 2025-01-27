@@ -26,12 +26,6 @@ type Query  {
 
 type Mutation {
   updatePlanById(planInput: PlanInput!): UpdatedPlan!
-  createPlanFromActivity(
-    activityId: ID!
-    token: String!
-    userId: ID!
-    planName: String!
-  ): CreatedPlan!
   createPlanFromGeoJson(gpxId: ID!, userId: ID!): CreatedPlan!
   deletePlanById(bucketKey: ID!, userId: String!): DeletePlan!
   updateArticleByPlanId(
@@ -78,15 +72,6 @@ type PointMetadata @aws_cognito_user_pools @aws_iam {
   pace: Int
   elevation: Float
   time: String
-}
-
-type Activity @aws_cognito_user_pools @aws_iam {
-  id: ID!
-  name: String!
-  start_date: String
-  distance: Float!
-  # this needs to store activity mile info
-  # it might be available from strava
 }
 
 type User @aws_cognito_user_pools @aws_iam {
