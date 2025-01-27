@@ -1,17 +1,27 @@
-type Query {
-  getActivityById(id: ID!): Activity # do i need this?
-  getActivities(
-    userId: String!
-    limit: Int!
-    offset: Int!
-    dateFrom: Int!
-    dateTo: Int!
-    token: String!
-  ): [Activity]!
+directive @aws_cognito_user_pools(
+  """
+  List of cognito user pool groups which have access on this field
+  """
+  cognito_groups: [String]
+) on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
+directive @aws_iam on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
+
+type Query  {
   getPlansByUserId(userId: ID!): [Plan]
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   getPlanById(planId: ID!, userId: ID!): Plan!
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   getPublishedPlans: [Plan]
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
+  getUser: User
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   } 
 
 type Mutation {
@@ -31,23 +41,23 @@ type Mutation {
   ): PublishedPlan!
 }
 
-type FeatureCollection {
+type FeatureCollection @aws_cognito_user_pools @aws_iam {
   features: [Feature!]
   type: String
 }
 
-type Feature {
+type Feature @aws_cognito_user_pools @aws_iam {
   type: String!
   geometry: Geometry!
   properties: GeoProperties
 }
 
-type Geometry {
+type Geometry @aws_cognito_user_pools @aws_iam {
   type: String
   coordinates: [[Float]]
 }
 
-type GeoProperties {
+type GeoProperties @aws_cognito_user_pools @aws_iam {
   id: Int
   name: String
   mileData: [S3MileData]
@@ -62,7 +72,7 @@ type GeoProperties {
   maxPace: Int
 }
 
-type PointMetadata {
+type PointMetadata @aws_cognito_user_pools @aws_iam {
   cumulativeDistance: Float
   grade: Float
   pace: Int
@@ -70,7 +80,7 @@ type PointMetadata {
   time: String
 }
 
-type Activity {
+type Activity @aws_cognito_user_pools @aws_iam {
   id: ID!
   name: String!
   start_date: String
@@ -79,7 +89,11 @@ type Activity {
   # it might be available from strava
 }
 
-type Plan {
+type User @aws_cognito_user_pools @aws_iam {
+  profilePicture: String
+}
+
+type Plan @aws_cognito_user_pools @aws_iam {
   id: String
   userId: String
   name: String
@@ -94,16 +108,18 @@ type Plan {
   gap: Int
   articleContent: String
   published: Boolean
+  coverImage: String
+  author: String
 }
 
-type S3MileData {
+type S3MileData @aws_cognito_user_pools @aws_iam {
   elevationGain: Float!
   elevationLoss: Float!
   index: Int! # starting index for this mile in the coordinates
   stopTime: Int!
 }
 
-type MileData {
+type MileData @aws_cognito_user_pools @aws_iam {
   elevationGain: Int!
   elevationLoss: Int!
   pace: Int # in seconds per mile
@@ -112,31 +128,31 @@ type MileData {
   gap: Int
 }
 
-type CreatedPlan {
+type CreatedPlan @aws_cognito_user_pools {
   success: Boolean!
 }
 
-type UpdatedPlan {
+type UpdatedPlan @aws_cognito_user_pools {
   success: Boolean!
 }
 
-type UpdatedArticle {
+type UpdatedArticle @aws_cognito_user_pools {
   success: Boolean!
 }
 
-type PublishedPlan {
+type PublishedPlan @aws_cognito_user_pools @aws_iam{
   success: Boolean!
 }
 
-type DeletePlan {
+type DeletePlan @aws_cognito_user_pools {
   success: Boolean!
 }
 
-input MileDataInput {
+input MileDataInput @aws_cognito_user_pools {
   pace: Int
 }
 
-input PlanInput {
+input PlanInput @aws_cognito_user_pools {
   userId: String!
   sortKey: String!
   planName: String!

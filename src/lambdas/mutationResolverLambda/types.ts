@@ -135,6 +135,8 @@ export type MutationUpdatePlanByIdArgs = {
 export type Plan = {
   __typename?: 'Plan';
   articleContent?: Maybe<Scalars['String']['output']>;
+  author?: Maybe<Scalars['String']['output']>;
+  coverImage?: Maybe<Scalars['String']['output']>;
   distanceInMiles?: Maybe<Scalars['Int']['output']>;
   durationInSeconds?: Maybe<Scalars['Int']['output']>;
   gainInMeters?: Maybe<Scalars['Int']['output']>;
@@ -175,27 +177,11 @@ export type PublishedPlan = {
 
 export type Query = {
   __typename?: 'Query';
-  getActivities: Array<Maybe<Activity>>;
-  getActivityById?: Maybe<Activity>;
   getGeoJsonBySortKey: FeatureCollection;
   getPlanById: Plan;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
   getPublishedPlans?: Maybe<Array<Maybe<Plan>>>;
-};
-
-
-export type QueryGetActivitiesArgs = {
-  dateFrom: Scalars['Int']['input'];
-  dateTo: Scalars['Int']['input'];
-  limit: Scalars['Int']['input'];
-  offset: Scalars['Int']['input'];
-  token: Scalars['String']['input'];
-  userId: Scalars['String']['input'];
-};
-
-
-export type QueryGetActivityByIdArgs = {
-  id: Scalars['ID']['input'];
+  getUser?: Maybe<User>;
 };
 
 
@@ -230,6 +216,11 @@ export type UpdatedArticle = {
 export type UpdatedPlan = {
   __typename?: 'UpdatedPlan';
   success: Scalars['Boolean']['output'];
+};
+
+export type User = {
+  __typename?: 'User';
+  profilePicture?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -326,6 +317,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdatedArticle: ResolverTypeWrapper<UpdatedArticle>;
   UpdatedPlan: ResolverTypeWrapper<UpdatedPlan>;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -353,7 +345,18 @@ export type ResolversParentTypes = {
   String: Scalars['String']['output'];
   UpdatedArticle: UpdatedArticle;
   UpdatedPlan: UpdatedPlan;
+  User: User;
 };
+
+export type Aws_Cognito_User_PoolsDirectiveArgs = {
+  cognito_groups?: Maybe<Array<Maybe<Scalars['String']['input']>>>;
+};
+
+export type Aws_Cognito_User_PoolsDirectiveResolver<Result, Parent, ContextType = any, Args = Aws_Cognito_User_PoolsDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Aws_IamDirectiveArgs = { };
+
+export type Aws_IamDirectiveResolver<Result, Parent, ContextType = any, Args = Aws_IamDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type ActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
   distance?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -429,6 +432,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
   articleContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  author?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  coverImage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   distanceInMiles?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   durationInSeconds?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   gainInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -460,12 +465,11 @@ export type PublishedPlanResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  getActivities?: Resolver<Array<Maybe<ResolversTypes['Activity']>>, ParentType, ContextType, RequireFields<QueryGetActivitiesArgs, 'dateFrom' | 'dateTo' | 'limit' | 'offset' | 'token' | 'userId'>>;
-  getActivityById?: Resolver<Maybe<ResolversTypes['Activity']>, ParentType, ContextType, RequireFields<QueryGetActivityByIdArgs, 'id'>>;
   getGeoJsonBySortKey?: Resolver<ResolversTypes['FeatureCollection'], ParentType, ContextType, RequireFields<QueryGetGeoJsonBySortKeyArgs, 'sortKey'>>;
   getPlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<QueryGetPlanByIdArgs, 'planId' | 'userId'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
   getPublishedPlans?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType>;
+  getUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 };
 
 export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['S3MileData'] = ResolversParentTypes['S3MileData']> = {
@@ -486,6 +490,11 @@ export type UpdatedPlanResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  profilePicture?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Activity?: ActivityResolvers<ContextType>;
   CreatedPlan?: CreatedPlanResolvers<ContextType>;
@@ -503,5 +512,10 @@ export type Resolvers<ContextType = any> = {
   S3MileData?: S3MileDataResolvers<ContextType>;
   UpdatedArticle?: UpdatedArticleResolvers<ContextType>;
   UpdatedPlan?: UpdatedPlanResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 };
 
+export type DirectiveResolvers<ContextType = any> = {
+  aws_cognito_user_pools?: Aws_Cognito_User_PoolsDirectiveResolver<any, any, ContextType>;
+  aws_iam?: Aws_IamDirectiveResolver<any, any, ContextType>;
+};

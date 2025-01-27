@@ -1,7 +1,3 @@
-import {
-  getActivityById,
-  getActivities
-} from './services/retrieveActivity.service';
 import { getGeoJsonBySortKey } from './services/retrieveGeoJson.service';
 import { getPlanById, getPublishedPlans, getPlansByUserId } from './services/retrievePlan.service';
 import dotenv from 'dotenv';
@@ -15,10 +11,6 @@ export const handler = async (event: any, context: any): Promise<any> => {
 
     if (currentEvent.info.parentTypeName === 'Query') {
       switch (currentEvent.info.fieldName) {
-        case 'getActivityById':
-          return getActivityById();
-        case 'getActivities':
-          return await getActivities(currentEvent.arguments);
         case 'getPlansByUserId':
           return await getPlansByUserId(currentEvent.arguments);
         case 'getGeoJsonBySortKey':

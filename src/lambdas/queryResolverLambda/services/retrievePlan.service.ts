@@ -5,7 +5,7 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 // the lambda runtime has dotenv in its environment so this may be redundant,
 // i am unsure if the dependency overlap will cause issues
 import dotenv from 'dotenv';
-dotenv.config({path: '../.env'});
+dotenv.config({ path: '../.env' });
 
 type NumberObject = {
   N: string;
@@ -60,6 +60,12 @@ type DbPlan = {
   };
   Published: {
     BOOL: Boolean
+  };
+  CoverImage: {
+    S: String;
+  };
+  Author: {
+    S: String;
   }
 };
 
@@ -91,8 +97,13 @@ export const getPublishedPlans = async (): Promise<any> => {
 
 export const getPlanById = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
-  const { planId, userId } = args;
+  const { planId } = args;
+
+  const userId = await retrieveUserIdWithUsername(args.userId, client)
+
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+
+  if(!userId) throw new Error("fetching userId failed")
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
@@ -110,6 +121,7 @@ export const getPlanById = async (args: any): Promise<any> => {
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
     const result = parsePlans(plan)[0];
+    console.log(result, '<< hi')
 
     return result;
   } catch (e) {
@@ -120,6 +132,40 @@ export const getPlanById = async (args: any): Promise<any> => {
 export const percentageOfPace = (distance: number, secs: number) => {
   return Math.round((1 / distance) * secs);
 };
+
+const retrieveUserIdWithUsername = async (username: string, client: DynamoDBClient): Promise<string | null> => {
+  const queryCommand = new QueryCommand({
+    TableName: "UserTable",
+    KeyConditionExpression: 'Username = :username',
+    ExpressionAttributeValues: {
+      ':username': { S: username }
+    }
+  });
+
+  try {
+    // Execute the query operation
+    const result = await client.send(queryCommand);
+
+    // Ensure that there are items in the result
+    if (!result.Items?.length) {
+      console.log(`No user found for username: ${username}`);
+      return null;
+    }
+
+    const userId = result.Items[0].userId?.S;
+    if (!userId) {
+      console.log(`No userId found for username: ${username}`);
+      return null;
+    }
+
+    return userId;  // Return the userId
+  } catch (e) {
+    console.error(`Error retrieving userId for username: ${username}`, e);
+    return null;  // Return null on error
+  }
+};
+
+
 
 const calcGap = (pace: number, gain: number, loss: number) => {
   // weight gain more than loss for gap, then convert meters to feet
@@ -185,16 +231,20 @@ const parsePlans = (plans: DbPlan[]) => {
     gainInMeters: Math.round(cumulativeGain),
     lossInMeters: Math.round(cumulativeLoss),
     durationInSeconds: Math.round(duration),
-    published: plan.Published.BOOL
+    published: plan.Published.BOOL,
+    coverImage: plan.CoverImage.S,
+    author: plan.Author.S
   }));
 }
 
 export const getPlansByUserId = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
 
-  const { userId } = args;
+  const userId = await retrieveUserIdWithUsername(args.userId, client)
 
   const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+
+  if(!userId) throw new Error("fetching userId failed")
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
@@ -208,10 +258,9 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
     // Execute the BatchGetItem operation
     const result = await client.send(queryCommand);
     if (result.Items === undefined) return [];
-    
+
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
-
     return parsePlans(plans)
   } catch (e) {
     console.log(e, '<< error batch get getPlansByUserId');
