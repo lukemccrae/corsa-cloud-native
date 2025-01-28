@@ -16,14 +16,6 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
-export type Activity = {
-  __typename?: 'Activity';
-  distance: Scalars['Float']['output'];
-  id: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
-  start_date?: Maybe<Scalars['String']['output']>;
-};
-
 export type CreatedPlan = {
   __typename?: 'CreatedPlan';
   success: Scalars['Boolean']['output'];
@@ -85,20 +77,11 @@ export type MileDataInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createPlanFromActivity: CreatedPlan;
   createPlanFromGeoJson: CreatedPlan;
   deletePlanById: DeletePlan;
   publishPlan: PublishedPlan;
   updateArticleByPlanId: UpdatedArticle;
   updatePlanById: UpdatedPlan;
-};
-
-
-export type MutationCreatePlanFromActivityArgs = {
-  activityId: Scalars['ID']['input'];
-  planName: Scalars['String']['input'];
-  token: Scalars['String']['input'];
-  userId: Scalars['ID']['input'];
 };
 
 
@@ -146,6 +129,7 @@ export type Plan = {
   lossInMeters?: Maybe<Scalars['Int']['output']>;
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
+  profilePhoto?: Maybe<Scalars['String']['output']>;
   published?: Maybe<Scalars['Boolean']['output']>;
   startTime?: Maybe<Scalars['String']['output']>;
   timezone?: Maybe<Scalars['String']['output']>;
@@ -181,7 +165,7 @@ export type Query = {
   getPlanById: Plan;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
   getPublishedPlans?: Maybe<Array<Maybe<Plan>>>;
-  getUser?: Maybe<User>;
+  getUserByUsername?: Maybe<User>;
 };
 
 
@@ -198,6 +182,11 @@ export type QueryGetPlanByIdArgs = {
 
 export type QueryGetPlansByUserIdArgs = {
   userId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUserByUsernameArgs = {
+  username: Scalars['String']['input'];
 };
 
 export type S3MileData = {
@@ -294,7 +283,6 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Activity: ResolverTypeWrapper<Activity>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
   DeletePlan: ResolverTypeWrapper<DeletePlan>;
@@ -322,7 +310,6 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Activity: Activity;
   Boolean: Scalars['Boolean']['output'];
   CreatedPlan: CreatedPlan;
   DeletePlan: DeletePlan;
@@ -357,14 +344,6 @@ export type Aws_Cognito_User_PoolsDirectiveResolver<Result, Parent, ContextType 
 export type Aws_IamDirectiveArgs = { };
 
 export type Aws_IamDirectiveResolver<Result, Parent, ContextType = any, Args = Aws_IamDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
-export type ActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
-  distance?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  start_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type CreatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatedPlan'] = ResolversParentTypes['CreatedPlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -422,7 +401,6 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createPlanFromActivity?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromActivityArgs, 'activityId' | 'planName' | 'token' | 'userId'>>;
   createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'userId'>>;
   publishPlan?: Resolver<ResolversTypes['PublishedPlan'], ParentType, ContextType, RequireFields<MutationPublishPlanArgs, 'bucketKey' | 'published' | 'userId'>>;
@@ -443,6 +421,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
   lossInMeters?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  profilePhoto?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   published?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -469,7 +448,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<QueryGetPlanByIdArgs, 'planId' | 'userId'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
   getPublishedPlans?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType>;
-  getUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
 };
 
 export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['S3MileData'] = ResolversParentTypes['S3MileData']> = {
@@ -496,7 +475,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type Resolvers<ContextType = any> = {
-  Activity?: ActivityResolvers<ContextType>;
   CreatedPlan?: CreatedPlanResolvers<ContextType>;
   DeletePlan?: DeletePlanResolvers<ContextType>;
   Feature?: FeatureResolvers<ContextType>;

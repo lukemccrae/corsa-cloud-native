@@ -66,6 +66,9 @@ type DbPlan = {
   };
   Author: {
     S: String;
+  };
+  ProfilePhoto: {
+    S: String;
   }
 };
 
@@ -233,7 +236,8 @@ const parsePlans = (plans: DbPlan[]) => {
     durationInSeconds: Math.round(duration),
     published: plan.Published.BOOL,
     coverImage: plan.CoverImage.S,
-    author: plan.Author.S
+    author: plan.Author.S,
+    profilePhoto: plan.ProfilePhoto.S
   }));
 }
 
