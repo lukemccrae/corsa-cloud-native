@@ -6,7 +6,7 @@ type RetrieveGeoJsonProps = {
 
 const s3Client = new S3Client({ region: 'us-west-1' });
 
-export const getGeoJsonBySortKey = async (
+export const getGeoJsonByBucketKey = async (
   args: RetrieveGeoJsonProps
 ): Promise<FeatureCollectionBAD> => {
   const { sortKey } = args;

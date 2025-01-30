@@ -56,7 +56,7 @@
     "@aws-cdk/aws-opensearchservice:enableOpensearchMultiAzWithStandby": true,
     "@aws-cdk/aws-lambda-nodejs:useLatestRuntimeVersion": true,
     "@aws-cdk/aws-efs:mountTargetOrderInsensitiveLogicalId": true,
-    "DYNAMODB_TABLE_NAME": "CorsaBackendStack-TrackMetadataTable38567A80-1ADFCHBQFB2NC",
+    "DYNAMODB_TABLE_NAME": "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V",
     "GEO_JSON_BUCKET_NAME": "corsabackendstack-geojsonbucket37355d9d-yb8me5pyze3i",
     "USER_TABLE": "UserTable",
     "REGION": "us-west-1",

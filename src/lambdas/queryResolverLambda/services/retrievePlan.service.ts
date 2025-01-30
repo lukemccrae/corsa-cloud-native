@@ -1,5 +1,4 @@
 import { DynamoDBClient, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
 // dotenv necessary here only for local development with `yarn ll`
 // this file is referencing environment variables defined in CDK
 // the lambda runtime has dotenv in its environment so this may be redundant,
@@ -31,16 +30,13 @@ type dbMileData = {
 };
 
 type DbPlan = {
-  MileData: {
-    L: dbMileData[];
-  };
-  Paces: {
-    L: [{ N: Number }];
-  };
-  BucketKey: {
+  UserId: {
     S: String;
   };
-  UserId: {
+  Slug: {
+    S: String;
+  }
+  BucketKey: {
     S: String;
   };
   StartTime: {
@@ -51,6 +47,12 @@ type DbPlan = {
   };
   Name: {
     S: String;
+  };
+  MileData: {
+    L: dbMileData[];
+  };
+  Paces: {
+    L: [{ N: Number }];
   };
   LastMileDistance: {
     N: Number;
@@ -69,12 +71,13 @@ type DbPlan = {
   };
   ProfilePhoto: {
     S: String;
-  }
+  };
 };
 
 export const getPublishedPlans = async (): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
-  const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
 
   const scanCommand = new ScanCommand({
     TableName: tableName,
@@ -91,7 +94,6 @@ export const getPublishedPlans = async (): Promise<any> => {
     // console.log(JSON.stringify(planResults.Items, null, 2), '<< results')
     // const plans = planResults.Items?.map(item => unmarshall(item)) as DbPlan[];
     const result = parsePlans(planResults.Items as unknown as DbPlan[])
-
     return result;
   } catch (e) {
     console.log(e, '<< error getPublishedPlans');
@@ -100,20 +102,21 @@ export const getPublishedPlans = async (): Promise<any> => {
 
 export const getPlanById = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
-  const { planId } = args;
+  const { slug } = args;
 
   const userId = await retrieveUserIdWithUsername(args.userId, client)
 
-  const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
 
-  if(!userId) throw new Error("fetching userId failed")
+  if (!userId) throw new Error("fetching userId failed")
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
-    KeyConditionExpression: 'UserId = :userId AND BucketKey = :planId',
+    KeyConditionExpression: 'UserId = :userId AND Slug = :slug',
     ExpressionAttributeValues: {
       ':userId': { S: userId },  // Partition key
-      ':planId': { S: planId } // Sort key
+      ':slug': { S: slug } // Sort key
     }
   });
 
@@ -197,8 +200,10 @@ const parsePlans = (plans: DbPlan[]) => {
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;
+  console.log(plans, '<< plan')
   return plans.map((plan: DbPlan) => ({
-    id: plan.BucketKey.S,
+    slug: plan.Slug.S,
+    bucketKey: plan.BucketKey.S,
     articleContent: plan.ArticleContent.S,
     userId: plan.UserId.S,
     name: plan.Name.S,
@@ -236,8 +241,8 @@ const parsePlans = (plans: DbPlan[]) => {
     durationInSeconds: Math.round(duration),
     published: plan.Published.BOOL,
     coverImage: plan.CoverImage.S,
-    author: plan.Author.S,
-    profilePhoto: plan.ProfilePhoto.S
+    profilePhoto: plan.ProfilePhoto.S,
+    author: plan.Author.S
   }));
 }
 
@@ -246,9 +251,11 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
 
   const userId = await retrieveUserIdWithUsername(args.userId, client)
 
-  const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
+  // console.log(tableName)
+  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
 
-  if(!userId) throw new Error("fetching userId failed")
+  if (!userId) throw new Error("fetching userId failed")
 
   const queryCommand = new QueryCommand({
     TableName: tableName,

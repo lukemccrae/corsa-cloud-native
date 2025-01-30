@@ -81,30 +81,25 @@ export class CorsaBackendStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
 
-    const trackMetadataTable = dynamodb.Table.fromTableArn(this, 'TrackMetadataTable',
-      `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${trackMetadataTableName}`);
+    // const trackMetadataTable = dynamodb.Table.fromTableArn(this, 'TrackMetadataTable',
+    //   `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${trackMetadataTableName}`);
 
-      const usernameLookupTable = new dynamodb.Table(this, 'UserTable', {
-        tableName: 'UserTable',  // Custom table name
-        partitionKey: { name: 'Username', type: dynamodb.AttributeType.STRING }, 
-        removalPolicy: cdk.RemovalPolicy.RETAIN, 
-        billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, 
-      });
+    const usernameLookupTable = new dynamodb.Table(this, 'UserTable', {
+      tableName: 'UserTable',  // Custom table name
+      partitionKey: { name: 'Username', type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    });
 
     // const usernameLookupTable = dynamodb.Table.fromTableArn(this, 'UsernameLookupTable',
     //   `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${usernameLookupTableName}`);
 
     // Create a DynamoDB table for storing metadata for geoJSON track
-    // const trackMetadataTable = new dynamodb.Table(this, 'TrackMetadataTable', {
-    //   partitionKey: {
-    //     name: 'UserId',
-    //     type: dynamodb.AttributeType.STRING
-    //   },
-    //   sortKey: {
-    //     name: 'BucketKey',
-    //     type: dynamodb.AttributeType.STRING
-    //   }
-    // });
+    const trackMetadataTable = new dynamodb.Table(this, "TrackMetadataTable", {
+      partitionKey: { name: "UserId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "Slug", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    });
 
     const utilityApi = new apiGateway.RestApi(this, 'CorsaUtilityApi', {
       defaultCorsPreflightOptions: {
@@ -422,9 +417,9 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'getPlansByUserId'
     });
 
-    queryDataSource.createResolver('getGeoJsonBySortKey', {
+    queryDataSource.createResolver('getGeoJsonByBucketKey', {
       typeName: 'Query',
-      fieldName: 'getGeoJsonBySortKey'
+      fieldName: 'getGeoJsonByBucketKey'
     });
 
     queryDataSource.createResolver('getPlanById', {

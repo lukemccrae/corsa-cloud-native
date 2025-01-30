@@ -11,11 +11,11 @@ import {
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
 import {
   FeatureCollectionBAD,
-  
+
 } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 import { gpxToGeoJson } from './gpxGeoJson.service'
-import {validateEnvVar} from '../helpers/environmentVarValidate.helper';
+import { validateEnvVar } from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
 import { generatePacesFromGeoJson } from '../helpers/paceFromJson.helper';
 import { retrieveTimezone } from './timezone.service';
@@ -23,6 +23,7 @@ import { retrieveTimezone } from './timezone.service';
 interface createPlanFromGeoJsonArgs {
   gpxId: string;
   userId: string;
+  username: string;
 }
 
 const client = new DynamoDBClient({ region: 'us-west-1' });
@@ -48,7 +49,7 @@ export const createPlanFromGeoJson = async (
   // turn retrieved GPX into a geoJSON
   const streamString = await response.Body.transformToString('utf-8');
 
-  const geoJsonString = gpxToGeoJson(streamString)
+  const geoJsonString = gpxToGeoJson(streamString);
 
   const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
 
@@ -74,7 +75,7 @@ export const createPlanFromGeoJson = async (
 
   // find timezone of GPX so that frontend can perform a conversion
   const timezone = retrieveTimezone(geoJson.features[0].geometry.coordinates[0])
-  
+
   return await uploadPlan(
     reducedPoints,
     paces,
@@ -83,7 +84,8 @@ export const createPlanFromGeoJson = async (
     args.gpxId,
     startTimeInUTC,
     timezone,
-    pointsPerMile
+    pointsPerMile,
+    args.username
   );
 };
 
@@ -95,7 +97,8 @@ const uploadPlan = async (
   gpxId: string,
   startTime: Date,
   timezone: string,
-  pointsPerMile: number[][]
+  pointsPerMile: number[][],
+  author: string
 ) => {
   try {
 
@@ -156,8 +159,9 @@ const uploadPlan = async (
       // TableName: process.env.DYNAMODB_TABLE_NAME,
       TableName: process.env.DYNAMODB_TABLE_NAME,
       Item: {
-        BucketKey: { S: Key },
         UserId: { S: userId },
+        Slug: { S: planName.replace(/\s+/g, '-') },
+        BucketKey: { S: Key },
         Name: { S: planName },
         StartTime: { S: String(startTime) },
         TimeZone: { S: timezone },
@@ -174,6 +178,12 @@ const uploadPlan = async (
         },
         CoverImage: {
           S: ""
+        },
+        ProfilePhoto: {
+          S: ""
+        },
+        Aurhor: {
+          S: author
         }
       }
     });

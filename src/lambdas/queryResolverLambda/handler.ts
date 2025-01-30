@@ -1,4 +1,4 @@
-import { getGeoJsonBySortKey } from './services/retrieveGeoJson.service';
+import { getGeoJsonByBucketKey } from './services/retrieveGeoJson.service';
 import { getPlanById, getPublishedPlans, getPlansByUserId } from './services/retrievePlan.service';
 import dotenv from 'dotenv';
 import { getUserByUsername } from './services/retrieveUser.service';
@@ -14,8 +14,8 @@ export const handler = async (event: any, context: any): Promise<any> => {
       switch (currentEvent.info.fieldName) {
         case 'getPlansByUserId':
           return await getPlansByUserId(currentEvent.arguments);
-        case 'getGeoJsonBySortKey':
-          return await getGeoJsonBySortKey(currentEvent.arguments);
+        case 'getGeoJsonByBucketKey':
+          return await getGeoJsonByBucketKey(currentEvent.arguments);
         case 'getPlanById':
           return await getPlanById(currentEvent.arguments);
         case 'getPublishedPlans':

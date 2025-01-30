@@ -10,10 +10,10 @@ type Query  {
   getPlansByUserId(userId: ID!): [Plan]
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
-  getGeoJsonBySortKey(sortKey: String!): FeatureCollection!
+  getGeoJsonByBucketKey(bucketKey: String!): FeatureCollection!
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
-  getPlanById(planId: ID!, userId: ID!): Plan!
+  getPlanById(slug: ID!, userId: ID!): Plan!
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
   getPublishedPlans: [Plan]
@@ -26,13 +26,18 @@ type Query  {
 
 type Mutation {
   updatePlanById(planInput: PlanInput!): UpdatedPlan!
-  createPlanFromGeoJson(gpxId: ID!, userId: ID!): CreatedPlan!
-  deletePlanById(bucketKey: ID!, userId: String!): DeletePlan!
+      @aws_cognito_user_pools(cognito_groups: ["users"])
+  createPlanFromGeoJson(gpxId: ID!, userId: ID!, username: ID!): CreatedPlan!
+      @aws_cognito_user_pools(cognito_groups: ["users"])
+  deletePlanById(slug: ID!, userId: String!): DeletePlan!
+      @aws_cognito_user_pools(cognito_groups: ["users"])
   updateArticleByPlanId(
-    bucketKey: ID!, userId: String!, articleContent: String!): UpdatedArticle!
+    slug: ID!, userId: String!, articleContent: String!): UpdatedArticle!
+        @aws_cognito_user_pools(cognito_groups: ["users"])
   publishPlan(
-    bucketKey: ID!, userId: String!, published: Boolean!
+    slug: ID!, userId: String!, published: Boolean!
   ): PublishedPlan!
+      @aws_cognito_user_pools(cognito_groups: ["users"])
 }
 
 type FeatureCollection @aws_cognito_user_pools @aws_iam {
@@ -80,7 +85,8 @@ type User @aws_cognito_user_pools @aws_iam {
 }
 
 type Plan @aws_cognito_user_pools @aws_iam {
-  id: String
+  slug: String
+  bucketKey: String
   userId: String
   name: String
   startTime: String # start time of the event
@@ -95,8 +101,8 @@ type Plan @aws_cognito_user_pools @aws_iam {
   articleContent: String
   published: Boolean
   coverImage: String
-  author: String
   profilePhoto: String
+  author: String
 }
 
 type S3MileData @aws_cognito_user_pools @aws_iam {
