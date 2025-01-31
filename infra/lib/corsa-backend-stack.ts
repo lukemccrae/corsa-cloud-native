@@ -417,6 +417,11 @@ export class CorsaBackendStack extends cdk.Stack {
       fieldName: 'getPlansByUserId'
     });
 
+    queryDataSource.createResolver('getPublishedUserInfo', {
+      typeName: 'Query',
+      fieldName: 'getPublishedUserInfo'
+    });
+
     queryDataSource.createResolver('getGeoJsonByBucketKey', {
       typeName: 'Query',
       fieldName: 'getGeoJsonByBucketKey'

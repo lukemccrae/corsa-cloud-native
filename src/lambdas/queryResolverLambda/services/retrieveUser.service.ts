@@ -5,14 +5,31 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 // the lambda runtime has dotenv in its environment so this may be redundant,
 // i am unsure if the dependency overlap will cause issues
 import dotenv from 'dotenv';
+import { fetchUsersWithUserId, getPlansByUserId } from './retrievePlan.service';
+import { User } from '../../types';
 dotenv.config({ path: '../.env' });
 
 interface GetUserByUsernameArgs {
     username: string;
 }
 
-export const getUserByUsername = async (args: GetUserByUsernameArgs): Promise<any> => {
-    console.log(args, '<< args')
+interface GetPublishedUserInfoArgs {
+    username: string;
+}
+
+export const getPublishedUserInfo = async (args: GetPublishedUserInfoArgs): Promise<any> => {
+    const { username } = args;
+    const { profilePicture, userId, bio } = await getUserByUsername({ username })
+    const plans = await fetchUsersWithUserId(userId)
+
+    return {
+        profilePicture, 
+        bio,
+        plans
+    }
+}
+
+export const getUserByUsername = async (args: GetUserByUsernameArgs): Promise<User> => {
     const client = new DynamoDBClient({ region: 'us-west-1' });
     const { username } = args;
 
@@ -26,17 +43,19 @@ export const getUserByUsername = async (args: GetUserByUsernameArgs): Promise<an
 
     try {
         const userResult = await client.send(queryCommand);
-        if (userResult.Items === undefined) return [];
+        if (userResult.Items === undefined) throw new Error(`retrieving userId for ${username} failed`)
 
         const user = JSON.parse(JSON.stringify(userResult.Items[0]));
         //   this should fulfill the user schema
         const userMapped = {
             profilePicture: user.profilePicture.S,
-            username: user.Username.S
-
+            bio: user.bio.S,
+            userId: user.userId.S,
+            Username: user.Username.S
         }
         return userMapped;
     } catch (e) {
         console.log(e, '<< error getPlanById');
+        throw new Error("retrieving userId failed")
     }
 }

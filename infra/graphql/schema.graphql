@@ -22,6 +22,9 @@ type Query  {
   getUserByUsername(username: String!): User
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
+  getPublishedUserInfo(username: String!): User
+    @aws_iam
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   } 
 
 type Mutation {
@@ -81,7 +84,9 @@ type PointMetadata @aws_cognito_user_pools @aws_iam {
 
 type User @aws_cognito_user_pools @aws_iam {
   profilePicture: String
-
+  bio: String
+  plans: [Plan]
+  userId: ID
 }
 
 type Plan @aws_cognito_user_pools @aws_iam {

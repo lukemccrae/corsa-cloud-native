@@ -80,3 +80,10 @@ export interface ActivityStreamData {
   altitude: AltitudeData;
   time: TimeData;
 }
+
+export type User = {
+  userId: string;
+  profilePicture: string;
+  bio: string;
+  Username: string;
+}

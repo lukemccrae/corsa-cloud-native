@@ -151,7 +151,7 @@ const retrieveUserIdWithUsername = async (username: string, client: DynamoDBClie
   try {
     // Execute the query operation
     const result = await client.send(queryCommand);
-
+    console.log(result, '<< res')
     // Ensure that there are items in the result
     if (!result.Items?.length) {
       console.log(`No user found for username: ${username}`);
@@ -246,16 +246,26 @@ const parsePlans = (plans: DbPlan[]) => {
   }));
 }
 
+// this method is used by handler for requests that need to retrieve the userId with username
 export const getPlansByUserId = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
 
   const userId = await retrieveUserIdWithUsername(args.userId, client)
+  if (!userId) throw new Error("fetching userId failed")
+  const result = fetchUsersWithUserId(userId)
+
+  return result;
 
   // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
   // console.log(tableName)
-  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
 
-  if (!userId) throw new Error("fetching userId failed")
+};
+
+// this method retrieves the users and takes a userId arg
+// This fetcher logic exists in its own method because some code paths have the userId and don't need to fetch it first
+export const fetchUsersWithUserId = async (userId: string) => {
+  const client = new DynamoDBClient({ region: 'us-west-1' });
+  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
@@ -276,4 +286,4 @@ export const getPlansByUserId = async (args: any): Promise<any> => {
   } catch (e) {
     console.log(e, '<< error batch get getPlansByUserId');
   }
-};
+}

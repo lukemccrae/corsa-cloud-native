@@ -167,6 +167,7 @@ export type Query = {
   getPlanById: Plan;
   getPlansByUserId?: Maybe<Array<Maybe<Plan>>>;
   getPublishedPlans?: Maybe<Array<Maybe<Plan>>>;
+  getPublishedUserInfo?: Maybe<User>;
   getUserByUsername?: Maybe<User>;
 };
 
@@ -184,6 +185,11 @@ export type QueryGetPlanByIdArgs = {
 
 export type QueryGetPlansByUserIdArgs = {
   userId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetPublishedUserInfoArgs = {
+  username: Scalars['String']['input'];
 };
 
 
@@ -211,7 +217,10 @@ export type UpdatedPlan = {
 
 export type User = {
   __typename?: 'User';
+  bio?: Maybe<Scalars['String']['output']>;
+  plans?: Maybe<Array<Maybe<Plan>>>;
   profilePicture?: Maybe<Scalars['String']['output']>;
+  userId?: Maybe<Scalars['ID']['output']>;
 };
 
 
@@ -451,6 +460,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPlanById?: Resolver<ResolversTypes['Plan'], ParentType, ContextType, RequireFields<QueryGetPlanByIdArgs, 'slug' | 'userId'>>;
   getPlansByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType, RequireFields<QueryGetPlansByUserIdArgs, 'userId'>>;
   getPublishedPlans?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType>;
+  getPublishedUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetPublishedUserInfoArgs, 'username'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
 };
 
@@ -473,7 +483,10 @@ export type UpdatedPlanResolvers<ContextType = any, ParentType extends Resolvers
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  plans?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plan']>>>, ParentType, ContextType>;
   profilePicture?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  userId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

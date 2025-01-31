@@ -1,7 +1,7 @@
 import { getGeoJsonByBucketKey } from './services/retrieveGeoJson.service';
 import { getPlanById, getPublishedPlans, getPlansByUserId } from './services/retrievePlan.service';
 import dotenv from 'dotenv';
-import { getUserByUsername } from './services/retrieveUser.service';
+import { getPublishedUserInfo, getUserByUsername,  } from './services/retrieveUser.service';
 dotenv.config({path: '../.env'});
 
 export const handler = async (event: any, context: any): Promise<any> => {
@@ -22,6 +22,8 @@ export const handler = async (event: any, context: any): Promise<any> => {
           return await getPublishedPlans(); 
         case 'getUserByUsername':
           return await getUserByUsername(currentEvent.arguments); 
+        case 'getPublishedUserInfo':
+          return await getPublishedUserInfo(currentEvent.arguments)
       }
     }
   } catch (e) {
