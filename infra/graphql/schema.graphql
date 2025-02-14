@@ -6,7 +6,7 @@ directive @aws_cognito_user_pools(
 ) on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
 directive @aws_iam on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
 
-type Query  {
+type Query {
   getPlansByUserId(userId: ID!): [Plan]
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
@@ -25,22 +25,22 @@ type Query  {
   getPublishedUserInfo(username: String!): User
     @aws_iam
     @aws_cognito_user_pools(cognito_groups: ["users"])
-  } 
+}
 
 type Mutation {
   updatePlanById(planInput: PlanInput!): UpdatedPlan!
-      @aws_cognito_user_pools(cognito_groups: ["users"])
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   createPlanFromGeoJson(gpxId: ID!, userId: ID!, username: ID!): CreatedPlan!
-      @aws_cognito_user_pools(cognito_groups: ["users"])
-  deletePlanById(slug: ID!, userId: String!): DeletePlan!
-      @aws_cognito_user_pools(cognito_groups: ["users"])
+    @aws_cognito_user_pools(cognito_groups: ["users"])
+  deletePlanById(slug: ID!, userId: String!, bucketKey: String!): DeletePlan!
+    @aws_cognito_user_pools(cognito_groups: ["users"])
   updateArticleByPlanId(
-    slug: ID!, userId: String!, articleContent: String!): UpdatedArticle!
-        @aws_cognito_user_pools(cognito_groups: ["users"])
-  publishPlan(
-    slug: ID!, userId: String!, published: Boolean!
-  ): PublishedPlan!
-      @aws_cognito_user_pools(cognito_groups: ["users"])
+    slug: ID!
+    userId: String!
+    articleContent: String!
+  ): UpdatedArticle! @aws_cognito_user_pools(cognito_groups: ["users"])
+  publishPlan(slug: ID!, userId: String!, published: Boolean!): PublishedPlan!
+    @aws_cognito_user_pools(cognito_groups: ["users"])
 }
 
 type FeatureCollection @aws_cognito_user_pools @aws_iam {
@@ -138,7 +138,7 @@ type UpdatedArticle @aws_cognito_user_pools {
   success: Boolean!
 }
 
-type PublishedPlan @aws_cognito_user_pools @aws_iam{
+type PublishedPlan @aws_cognito_user_pools @aws_iam {
   success: Boolean!
 }
 

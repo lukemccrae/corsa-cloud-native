@@ -93,6 +93,7 @@ export type MutationCreatePlanFromGeoJsonArgs = {
 
 
 export type MutationDeletePlanByIdArgs = {
+  bucketKey: Scalars['String']['input'];
   slug: Scalars['ID']['input'];
   userId: Scalars['String']['input'];
 };
@@ -413,7 +414,7 @@ export type MileDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId' | 'username'>>;
-  deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'slug' | 'userId'>>;
+  deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'slug' | 'userId'>>;
   publishPlan?: Resolver<ResolversTypes['PublishedPlan'], ParentType, ContextType, RequireFields<MutationPublishPlanArgs, 'published' | 'slug' | 'userId'>>;
   updateArticleByPlanId?: Resolver<ResolversTypes['UpdatedArticle'], ParentType, ContextType, RequireFields<MutationUpdateArticleByPlanIdArgs, 'articleContent' | 'slug' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;

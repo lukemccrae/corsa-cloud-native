@@ -49,9 +49,9 @@ export const createPlanFromGeoJson = async (
   if (!response.Body) throw new Error('Failed to retrieve GPX from S3');
 
   // turn retrieved GPX into a geoJSON
-  const geoJsonString = await response.Body.transformToString('utf-8');
+  const streamString = await response.Body.transformToString('utf-8');
 
-  // const geoJsonString = gpxToGeoJson(streamString);
+  const geoJsonString = gpxToGeoJson(streamString);
   // console.log(JSON.stringify(streamString, null, 2), '<< fc');
 
   const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
@@ -71,8 +71,8 @@ export const createPlanFromGeoJson = async (
 
   const paces = generatePacesFromGeoJson(geoJson);
 
-  const reducedPoints: FeatureCollectionBAD =
-    shortenIteratively(featureCollection);
+  // const reducedPoints: FeatureCollectionBAD =
+  //   shortenIteratively(featureCollection);
 
   const startTimeInUTC: Date = new Date(
     geoJson.features[0].properties.pointMetadata[0].time
@@ -84,7 +84,7 @@ export const createPlanFromGeoJson = async (
   );
 
   return await uploadPlan(
-    reducedPoints,
+    featureCollection,
     paces,
     userId,
     planName,
@@ -107,6 +107,7 @@ const uploadPlan = async (
   pointsPerMile: number[][],
   author: string
 ) => {
+  console.log(geoJson.features[0].properties.lastMileDistance, '<< lmd');
   try {
     const s3 = new S3({ region: 'us-west-1' });
 
@@ -169,7 +170,12 @@ const uploadPlan = async (
       TableName: 'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V',
       Item: {
         UserId: { S: userId },
-        Slug: { S: planName.replace(/\s+/g, '-') },
+        Slug: {
+          S:
+            planName.replace(/\s+/g, '-') +
+            '-' +
+            Math.random().toString(36).slice(2, 10)
+        },
         BucketKey: { S: Key },
         Name: { S: planName },
         StartTime: { S: String(startTime) },

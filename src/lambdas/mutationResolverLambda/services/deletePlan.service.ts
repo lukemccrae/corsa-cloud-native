@@ -5,9 +5,21 @@ const client = new DynamoDBClient({ region: 'us-west-1' });
 const s3 = new S3({ region: 'us-west-1' });
 
 interface DeletePlanArgs {
-  bucketKey: string;
+  slug: string;
   userId: string;
+  bucketKey: string;
 }
+
+const checkPublicPlan = async (userId: string, slug: string) => {
+  // const queryCommand = new QueryCommand({
+  //   TableName: tableName,
+  //   KeyConditionExpression: 'UserId = :userId AND Slug = :slug',
+  //   ExpressionAttributeValues: {
+  //     ':userId': { S: userId },  // Partition key
+  //     ':slug': { S: slug } // Sort key
+  //   }
+  // });
+};
 
 export const deletePlanById = async (args: DeletePlanArgs) => {
   if (
@@ -23,10 +35,14 @@ export const deletePlanById = async (args: DeletePlanArgs) => {
   ) {
     throw new Error('S3 bucket name not provided');
   }
+
+  // dont delete public plan
+  // const isPubLicPlan = await checkPublicPlan(userId, slug)
+
   const input = {
     Key: {
-      BucketKey: {
-        S: args.bucketKey
+      Slug: {
+        S: args.slug
       },
       UserId: {
         S: args.userId
