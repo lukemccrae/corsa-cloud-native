@@ -8,6 +8,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { type Construct } from 'constructs';
 import { Duration } from 'aws-cdk-lib';
+import * as amplify from '@aws-cdk/aws-amplify-alpha';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
 
 export class CorsaBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -461,5 +464,26 @@ export class CorsaBackendStack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'updateArticleByPlanId'
     });
+
+    const mySecretValue = cdk.aws_ssm.StringParameter.valueFromLookup(this, 'GITHUB_OAUTH_TOKEN');
+    const secretValue = cdk.SecretValue.unsafePlainText(mySecretValue);
+
+    // Create an Amplify App
+    const amplifyApp = new amplify.App(this, 'MyAmplifyApp', {
+      sourceCodeProvider: new amplify.GitHubSourceCodeProvider({
+        owner: 'lukemccrae',
+        repository: 'corsa',
+        oauthToken: secretValue,      
+      }),
+    });
+
+    // Connect the main branch for auto-deployment
+    const mainBranch = amplifyApp.addBranch('main');
+
+    // Add a custom domain and set up Route 53 records
+    const amplifydomain = amplifyApp.addDomain('corsa.run');
+
+    amplifydomain.mapRoot(mainBranch); // Map root domain (e.g., example.com)
+    amplifydomain.mapSubDomain(mainBranch, 'www'); // Map www.example.com
   }
 }

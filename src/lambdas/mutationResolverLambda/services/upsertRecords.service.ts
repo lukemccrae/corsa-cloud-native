@@ -73,7 +73,7 @@ export const publishPlan = async (
         };
       throw new Error('Publishing the article failed');
     } catch (e) {
-      console.log(e, '<< error');
+      console.log(e, '<< publishPlan error');
       return {
         success: false
       };
@@ -89,7 +89,7 @@ export const updateArticleByPlanId = async (
     TableName: process.env.DYNAMODB_TABLE_NAME,
     Key: {
       UserId: { S: userId },
-      BucketKey: { S: slug }
+      Slug: { S: slug }
     },
     // This is analogous to a SQL statement
     UpdateExpression:
@@ -113,7 +113,7 @@ export const updateArticleByPlanId = async (
       };
     throw new Error('Updating the article failed');
   } catch (e) {
-    console.log(e, '<< error');
+    console.log(e, '<< updateArticleByPlanId error');
     return {
       success: false
     };
