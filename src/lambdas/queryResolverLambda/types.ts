@@ -131,6 +131,7 @@ export type Plan = {
   mileData?: Maybe<Array<Maybe<MileData>>>;
   name?: Maybe<Scalars['String']['output']>;
   profilePhoto?: Maybe<Scalars['String']['output']>;
+  publishDate?: Maybe<Scalars['String']['output']>;
   published?: Maybe<Scalars['Boolean']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   startTime?: Maybe<Scalars['String']['output']>;
@@ -433,6 +434,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
   mileData?: Resolver<Maybe<Array<Maybe<ResolversTypes['MileData']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   profilePhoto?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  publishDate?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   published?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

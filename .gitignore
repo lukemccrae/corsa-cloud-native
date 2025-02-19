@@ -20,3 +20,6 @@ cdk.out
 
 # Explicitly exclude index.js.map from being ignored
 **/index.js.map
+
+# ignore amplify generated file
+cdk.context.json

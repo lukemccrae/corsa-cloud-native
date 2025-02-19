@@ -108,6 +108,7 @@ type Plan @aws_cognito_user_pools @aws_iam {
   coverImage: String
   profilePhoto: String
   author: String
+  publishDate: String
 }
 
 type S3MileData @aws_cognito_user_pools @aws_iam {

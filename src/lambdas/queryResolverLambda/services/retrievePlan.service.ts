@@ -72,6 +72,9 @@ type DbPlan = {
   ProfilePhoto: {
     S: String;
   };
+  PublishDate: {
+    S: String;
+  }
 };
 
 export const getPublishedPlans = async (): Promise<any> => {
@@ -242,7 +245,8 @@ const parsePlans = (plans: DbPlan[]) => {
     published: plan.Published.BOOL,
     coverImage: plan.CoverImage.S,
     profilePhoto: plan.ProfilePhoto.S,
-    author: plan.Author.S
+    author: plan.Author.S,
+    publishDate: plan.PublishDate.S
   }));
 }
 
