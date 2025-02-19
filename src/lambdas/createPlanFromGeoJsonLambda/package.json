@@ -7,7 +7,7 @@
     "test": "jest --runInBand",
     "build": "esbuild handler.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
     "buildlocal": "esbuild handler.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=local/index.js",
-    "ll": "yarn buildlocal && yarn lambda-local -l local/index.js -h handler --watch"
+    "ll": "yarn buildlocal && yarn lambda-local -l local/index.js -h handler --watch --timeout 10000"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.428.0",

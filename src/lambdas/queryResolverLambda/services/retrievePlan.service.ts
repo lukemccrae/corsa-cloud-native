@@ -1,4 +1,8 @@
-import { DynamoDBClient, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  QueryCommand,
+  ScanCommand
+} from '@aws-sdk/client-dynamodb';
 // dotenv necessary here only for local development with `yarn ll`
 // this file is referencing environment variables defined in CDK
 // the lambda runtime has dotenv in its environment so this may be redundant,
@@ -35,7 +39,7 @@ type DbPlan = {
   };
   Slug: {
     S: String;
-  }
+  };
   BucketKey: {
     S: String;
   };
@@ -61,7 +65,7 @@ type DbPlan = {
     S: String;
   };
   Published: {
-    BOOL: Boolean
+    BOOL: Boolean;
   };
   CoverImage: {
     S: String;
@@ -74,13 +78,14 @@ type DbPlan = {
   };
   PublishDate: {
     S: String;
-  }
+  };
 };
 
 export const getPublishedPlans = async (): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
   // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
-  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
+  const tableName =
+    'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V';
 
   const scanCommand = new ScanCommand({
     TableName: tableName,
@@ -96,29 +101,30 @@ export const getPublishedPlans = async (): Promise<any> => {
 
     // console.log(JSON.stringify(planResults.Items, null, 2), '<< results')
     // const plans = planResults.Items?.map(item => unmarshall(item)) as DbPlan[];
-    const result = parsePlans(planResults.Items as unknown as DbPlan[])
+    const result = parsePlans(planResults.Items as unknown as DbPlan[]);
     return result;
   } catch (e) {
     console.log(e, '<< error getPublishedPlans');
   }
-}
+};
 
 export const getPlanById = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
   const { slug } = args;
 
-  const userId = await retrieveUserIdWithUsername(args.userId, client)
+  const userId = await retrieveUserIdWithUsername(args.userId, client);
 
   // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
-  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
+  const tableName =
+    'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V';
 
-  if (!userId) throw new Error("fetching userId failed")
+  if (!userId) throw new Error('fetching userId failed');
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
     KeyConditionExpression: 'UserId = :userId AND Slug = :slug',
     ExpressionAttributeValues: {
-      ':userId': { S: userId },  // Partition key
+      ':userId': { S: userId }, // Partition key
       ':slug': { S: slug } // Sort key
     }
   });
@@ -130,21 +136,24 @@ export const getPlanById = async (args: any): Promise<any> => {
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
     const result = parsePlans(plan)[0];
-    console.log(result, '<< hi')
+    console.log(result, '<< hi');
 
     return result;
   } catch (e) {
     console.log(e, '<< error getPlanById');
   }
-}
+};
 
 export const percentageOfPace = (distance: number, secs: number) => {
   return Math.round((1 / distance) * secs);
 };
 
-const retrieveUserIdWithUsername = async (username: string, client: DynamoDBClient): Promise<string | null> => {
+const retrieveUserIdWithUsername = async (
+  username: string,
+  client: DynamoDBClient
+): Promise<string | null> => {
   const queryCommand = new QueryCommand({
-    TableName: "UserTable",
+    TableName: 'UserTable',
     KeyConditionExpression: 'Username = :username',
     ExpressionAttributeValues: {
       ':username': { S: username }
@@ -154,7 +163,7 @@ const retrieveUserIdWithUsername = async (username: string, client: DynamoDBClie
   try {
     // Execute the query operation
     const result = await client.send(queryCommand);
-    console.log(result, '<< res')
+    console.log(result, '<< res');
     // Ensure that there are items in the result
     if (!result.Items?.length) {
       console.log(`No user found for username: ${username}`);
@@ -167,23 +176,21 @@ const retrieveUserIdWithUsername = async (username: string, client: DynamoDBClie
       return null;
     }
 
-    return userId;  // Return the userId
+    return userId; // Return the userId
   } catch (e) {
     console.error(`Error retrieving userId for username: ${username}`, e);
-    return null;  // Return null on error
+    return null; // Return null on error
   }
 };
 
-
-
 const calcGap = (pace: number, gain: number, loss: number) => {
   // weight gain more than loss for gap, then convert meters to feet
-  const weightedVert = (gain + (loss * .2)) * 3.28084
+  const weightedVert = (gain + loss * 0.2) * 3.28084;
   // if gain is positive use pacing formula
   if (weightedVert >= 0) {
     // divide weighted gain exponent by 100 for pacing equation
     const gainExponent = weightedVert / 100;
-    const gap = pace / Math.pow(1.1, gainExponent)
+    const gap = pace / Math.pow(1.1, gainExponent);
 
     return Math.round(gap);
   } else {
@@ -191,19 +198,24 @@ const calcGap = (pace: number, gain: number, loss: number) => {
     // not sure how to effectively modify pace for downhill splits, just subtracting for now
     return Math.round(pace - weightedVert);
   }
-}
+};
 
-const calcLastMileGap = (pace: number, gain: number, loss: number, lmd: number) => {
-  const percentPace = percentageOfPace(lmd, pace)
-  return calcGap(percentPace, gain, loss)
-}
+const calcLastMileGap = (
+  pace: number,
+  gain: number,
+  loss: number,
+  lmd: number
+) => {
+  const percentPace = percentageOfPace(lmd, pace);
+  return calcGap(percentPace, gain, loss);
+};
 
 // big scary
 const parsePlans = (plans: DbPlan[]) => {
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;
-  console.log(plans, '<< plan')
+  console.log(plans, '<< plan');
   return plans.map((plan: DbPlan) => ({
     slug: plan.Slug.S,
     bucketKey: plan.BucketKey.S,
@@ -213,7 +225,6 @@ const parsePlans = (plans: DbPlan[]) => {
     startTime: plan.StartTime.S,
     timezone: plan.TimeZone?.S,
     mileData: plan.MileData.L.map((data, i) => {
-
       duration += parseFloat(plan.Paces.L[i].N.toString());
 
       let finalMile: boolean = i === plan.MileData.L.length - 1;
@@ -232,9 +243,13 @@ const parsePlans = (plans: DbPlan[]) => {
           parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
         ),
         mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
-        pace: !finalMile ? pace : percentageOfPace(Number(plan.LastMileDistance.N), pace), // Ns are string in the DB...
+        pace: !finalMile
+          ? pace
+          : percentageOfPace(Number(plan.LastMileDistance.N), pace), // Ns are string in the DB...
         stopTime: parseFloat(data.M.stopTime.N),
-        gap: !finalMile ? calcGap(pace, gain, loss) : calcLastMileGap(pace, gain, loss, Number(plan.LastMileDistance.N))
+        gap: !finalMile
+          ? calcGap(pace, gain, loss)
+          : calcLastMileGap(pace, gain, loss, Number(plan.LastMileDistance.N))
       };
     }),
     lastMileDistance: plan.LastMileDistance.N,
@@ -248,28 +263,28 @@ const parsePlans = (plans: DbPlan[]) => {
     author: plan.Author.S,
     publishDate: plan.PublishDate.S
   }));
-}
+};
 
 // this method is used by handler for requests that need to retrieve the userId with username
 export const getPlansByUserId = async (args: any): Promise<any> => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
 
-  const userId = await retrieveUserIdWithUsername(args.userId, client)
-  if (!userId) throw new Error("fetching userId failed")
-  const result = fetchUsersWithUserId(userId)
+  const userId = await retrieveUserIdWithUsername(args.userId, client);
+  if (!userId) throw new Error('fetching userId failed');
+  const result = fetchUsersWithUserId(userId);
 
   return result;
 
   // const tableName = String(process.env.DYNAMODB_TABLE_NAME);
   // console.log(tableName)
-
 };
 
 // this method retrieves the users and takes a userId arg
 // This fetcher logic exists in its own method because some code paths have the userId and don't need to fetch it first
 export const fetchUsersWithUserId = async (userId: string) => {
   const client = new DynamoDBClient({ region: 'us-west-1' });
-  const tableName = "CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V"
+  const tableName =
+    'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V';
 
   const queryCommand = new QueryCommand({
     TableName: tableName,
@@ -286,8 +301,8 @@ export const fetchUsersWithUserId = async (userId: string) => {
 
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));
-    return parsePlans(plans)
+    return parsePlans(plans);
   } catch (e) {
     console.log(e, '<< error batch get getPlansByUserId');
   }
-}
+};

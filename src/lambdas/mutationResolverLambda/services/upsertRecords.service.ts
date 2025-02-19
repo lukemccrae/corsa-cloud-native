@@ -1,7 +1,12 @@
 import { makeMileData } from '../helpers/mileData.helper';
 import S3 = require('aws-sdk/clients/s3');
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { type CreatedPlan, UpdatedPlan, UpdatedArticle, PublishedPlan } from '../types';
+import {
+  type CreatedPlan,
+  UpdatedPlan,
+  UpdatedArticle,
+  PublishedPlan
+} from '../types';
 import {
   AttributeValue,
   DynamoDBClient,
@@ -9,9 +14,7 @@ import {
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
-import {
-  FeatureCollectionBAD,
-} from '../../types';
+import { FeatureCollectionBAD } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
 
 interface UpdatePlanProps {
@@ -43,42 +46,42 @@ interface createPlanFromGeoJsonArgs {
 const client = new DynamoDBClient({ region: 'us-west-1' });
 
 export const publishPlan = async (
-  props: PublishPlanProps): Promise<PublishedPlan> => {
-    const { published, bucketKey, userId} = props;
-    const command = new UpdateItemCommand({
-      TableName: process.env.DYNAMODB_TABLE_NAME,
-      Key: {
-        UserId: { S: userId },
-        BucketKey: { S: bucketKey }
-      },
-      // This is analogous to a SQL statement
-      UpdateExpression:
-        'SET #Published = :published',
-      // This ties the passed values to the DB variables
-      ExpressionAttributeNames: {
-        '#Published': 'Published'
-      },
-      // This passes the values to the write operation
-      ExpressionAttributeValues: {
-        ':published': { BOOL: published }
-      }
-    });
-
-    try {
-      // console.log(command, '<< command')
-      const response = await client.send(command);
-      if (response.$metadata.httpStatusCode === 200)
-        return {
-          success: true
-        };
-      throw new Error('Publishing the article failed');
-    } catch (e) {
-      console.log(e, '<< publishPlan error');
-      return {
-        success: false
-      };
+  props: PublishPlanProps
+): Promise<PublishedPlan> => {
+  const { published, bucketKey, userId } = props;
+  const command = new UpdateItemCommand({
+    TableName: process.env.DYNAMODB_TABLE_NAME,
+    Key: {
+      UserId: { S: userId },
+      BucketKey: { S: bucketKey }
+    },
+    // This is analogous to a SQL statement
+    UpdateExpression: 'SET #Published = :published',
+    // This ties the passed values to the DB variables
+    ExpressionAttributeNames: {
+      '#Published': 'Published'
+    },
+    // This passes the values to the write operation
+    ExpressionAttributeValues: {
+      ':published': { BOOL: published }
     }
-}
+  });
+
+  try {
+    // console.log(command, '<< command')
+    const response = await client.send(command);
+    if (response.$metadata.httpStatusCode === 200)
+      return {
+        success: true
+      };
+    throw new Error('Publishing the article failed');
+  } catch (e) {
+    console.log(e, '<< publish article error');
+    return {
+      success: false
+    };
+  }
+};
 
 export const updateArticleByPlanId = async (
   articleInputArgs: UpdateArticleProps
@@ -92,8 +95,7 @@ export const updateArticleByPlanId = async (
       Slug: { S: slug }
     },
     // This is analogous to a SQL statement
-    UpdateExpression:
-      'SET #ArticleContent = :articleContent',
+    UpdateExpression: 'SET #ArticleContent = :articleContent',
     // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
       '#ArticleContent': 'ArticleContent'
@@ -113,17 +115,18 @@ export const updateArticleByPlanId = async (
       };
     throw new Error('Updating the article failed');
   } catch (e) {
-    console.log(e, '<< updateArticleByPlanId error');
+    console.log(e, '<< update article error');
     return {
       success: false
     };
   }
-}
+};
 
 export const updatePlanById = async (
   planInputArgs: UpdatePlanProps
 ): Promise<UpdatedPlan> => {
-  const { startTime, userId, planName, sortKey, paces, articleContent } = planInputArgs;
+  const { startTime, userId, planName, sortKey, paces, articleContent } =
+    planInputArgs;
 
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -137,13 +140,13 @@ export const updatePlanById = async (
     // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
       '#Name': 'Name',
-      '#StartTime': 'StartTime',
+      '#StartTime': 'StartTime'
       // '#Paces': 'Paces',
     },
     // This passes the values to the write operation
     ExpressionAttributeValues: {
       ':name': { S: planName },
-      ':startTime': { N: String(startTime) },
+      ':startTime': { N: String(startTime) }
       // ':paces': { L: paces.map((item) => ({ N: String(item) })) }, // paces not changeable for now
     }
   });
@@ -162,4 +165,3 @@ export const updatePlanById = async (
     };
   }
 };
-
