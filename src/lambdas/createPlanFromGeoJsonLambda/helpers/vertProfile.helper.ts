@@ -7,7 +7,6 @@ interface MakeProfilePoints {
 //make each point relative to the min / max as a percentage
 //and display that percentage with a number from 1-20
 function equalizeProfile(milePoints: number[], min: number, max: number) {
-  console.log(milePoints, max, min, '<< milePoints');
   let result = [];
   let avgIncrement = (max - min) / 20;
 

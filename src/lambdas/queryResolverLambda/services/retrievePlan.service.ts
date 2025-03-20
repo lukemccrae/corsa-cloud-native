@@ -33,6 +33,23 @@ type dbMileData = {
   };
 };
 
+type ArticleElements = {
+  M: {
+    Image: { S: string };
+    Text: { S: string };
+    PaceTable: {
+      M: {
+        Columns: {
+          L: { S: string }[]; // Array of objects where each object has a string property 'S'
+        };
+        Miles: {
+          L: { N: string }[]; // Array of objects where each object has a string property 'N'
+        };
+      };
+    };
+  };
+};
+
 type DbPlan = {
   UserId: {
     S: String;
@@ -79,6 +96,9 @@ type DbPlan = {
   PublishDate: {
     S: String;
   };
+  ArticleElements: {
+    L: ArticleElements
+  }
 };
 
 export const getPublishedPlans = async (): Promise<any> => {
@@ -119,7 +139,6 @@ export const getPlanById = async (args: any): Promise<any> => {
     'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V';
 
   if (!userId) throw new Error('fetching userId failed');
-
   const queryCommand = new QueryCommand({
     TableName: tableName,
     KeyConditionExpression: 'UserId = :userId AND Slug = :slug',
@@ -131,12 +150,12 @@ export const getPlanById = async (args: any): Promise<any> => {
 
   try {
     const planResult = await client.send(queryCommand);
+    console.log(planResult, '<< pr')
     if (planResult.Items === undefined) return [];
 
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
     const result = parsePlans(plan)[0];
-    console.log(result, '<< hi');
 
     return result;
   } catch (e) {
@@ -163,7 +182,6 @@ const retrieveUserIdWithUsername = async (
   try {
     // Execute the query operation
     const result = await client.send(queryCommand);
-    console.log(result, '<< res');
     // Ensure that there are items in the result
     if (!result.Items?.length) {
       console.log(`No user found for username: ${username}`);
@@ -212,10 +230,10 @@ const calcLastMileGap = (
 
 // big scary
 const parsePlans = (plans: DbPlan[]) => {
+  console.log(JSON.stringify(plans))
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;
-  console.log(plans, '<< plan');
   return plans.map((plan: DbPlan) => ({
     slug: plan.Slug.S,
     bucketKey: plan.BucketKey.S,
@@ -261,7 +279,26 @@ const parsePlans = (plans: DbPlan[]) => {
     coverImage: plan.CoverImage.S,
     profilePhoto: plan.ProfilePhoto.S,
     author: plan.Author.S,
-    publishDate: plan.PublishDate.S
+    publishDate: plan.PublishDate.S,
+    articleElements: (plan.ArticleElements.L as unknown as ArticleElements[]).flatMap((element) => {
+      const result: any[] = [];
+    
+      // Text object
+      result.push({ text: element.M.Text.S });
+    
+      // Image object
+      result.push({ image: element.M.Image.S });
+    
+      // PaceTable object
+      result.push({
+        paceTable: {
+          columns: element.M.PaceTable.M.Columns.L.map((col) => col.S),
+          miles: element.M.PaceTable.M.Miles.L.map((mile) => mile.N)
+        },
+      });
+    
+      return result;
+    })
   }));
 };
 

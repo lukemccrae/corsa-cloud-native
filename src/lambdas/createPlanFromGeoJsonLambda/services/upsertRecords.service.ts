@@ -51,9 +51,9 @@ export const createPlanFromGeoJson = async (
   // turn retrieved GPX into a geoJSON
   const streamString = await response.Body.transformToString('utf-8');
 
-  // const geoJsonString = gpxToGeoJson(streamString);
+  const geoJsonString = gpxToGeoJson(streamString);
 
-  const featureCollection: FeatureCollectionBAD = JSON.parse(streamString);
+  const featureCollection: FeatureCollectionBAD = JSON.parse(geoJsonString);
 
   const planName = featureCollection.features[0].properties.name;
   const userId = args.userId;
@@ -78,9 +78,9 @@ export const createPlanFromGeoJson = async (
   );
 
   // find timezone of GPX so that frontend can perform a conversion
-  const timezone = retrieveTimezone(
-    geoJson.features[0].geometry.coordinates[0]
-  );
+  // const timezone = retrieveTimezone(
+  //   geoJson.features[0].geometry.coordinates[0]
+  // );
 
   return await uploadPlan(
     featureCollection,
@@ -89,7 +89,7 @@ export const createPlanFromGeoJson = async (
     planName,
     args.gpxId,
     startTimeInUTC,
-    timezone,
+    // timezone,
     pointsPerMile,
     args.username
   );
@@ -102,7 +102,7 @@ const uploadPlan = async (
   planName: string,
   gpxId: string,
   startTime: Date,
-  timezone: string,
+  // timezone: string,
   pointsPerMile: number[][],
   author: string
 ) => {
@@ -128,18 +128,19 @@ const uploadPlan = async (
     // I think this flow could be done decoupled
     // S3 upload could trigger the dynamo write
     // Dynamo would just need the object ID from s3
-    // async function uploadToS3(
-    //   bucketParams: S3.PutObjectRequest
-    // ): Promise<void> {
-    //   try {
-    //     const data = await s3.putObject(bucketParams).promise();
-    //     console.log('File uploaded to S3:', data);
-    //   } catch (error) {
-    //     console.error('Error uploading to S3:', error);
-    //   }
-    // }
+    async function uploadToS3(
+      bucketParams: S3.PutObjectRequest
+    ): Promise<void> {
+      try {
+        const data = await s3.putObject(bucketParams).promise();
+        console.log('File uploaded to S3:', data);
+      } catch (error) {
+        console.error('Error uploading to S3:', error);
+      }
+    }
 
-    // await uploadToS3(bucketParams);
+    await uploadToS3(bucketParams);
+
 
     const mileDataAttribute = {
       L: geoJson.features[0].properties.mileData.map((dataItem, i) => {
@@ -161,7 +162,6 @@ const uploadPlan = async (
     const { Key } = bucketParams;
 
     const newMDstate = `# New Article`;
-
     const command = new PutItemCommand({
       // TableName: process.env.DYNAMODB_TABLE_NAME,
       // TableName: process.env.DYNAMODB_TABLE_NAME,
@@ -177,7 +177,7 @@ const uploadPlan = async (
         BucketKey: { S: Key },
         Name: { S: planName },
         StartTime: { S: String(startTime) },
-        TimeZone: { S: timezone },
+        TimeZone: { S: "timezone" },
         MileData: mileDataAttribute,
         Paces: paces,
         LastMileDistance: {
@@ -203,8 +203,6 @@ const uploadPlan = async (
         }
       }
     });
-
-    console.log('hiiiii');
 
     const dynamoresponse = await client.send(command);
 

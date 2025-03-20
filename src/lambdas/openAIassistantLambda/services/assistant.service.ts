@@ -10,7 +10,7 @@ export const chatCompletionAssistant = async (messages: string[], ASSISTANTS_API
         const messagesForAssistant = [
             {
                 "role": "system",
-                "content": "You are a trail running coach."
+                "content": "I need you to read my article and provide me some results that I will describe."
             },
             ...messages.map(message => ({
                 "role": "user",

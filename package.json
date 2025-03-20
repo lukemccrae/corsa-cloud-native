@@ -21,7 +21,7 @@
     "@types/node": "20.5.9",
     "@types/uuid": "^9.0.4",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "aws-cdk": "2.96.2",
+    "aws-cdk": "^2.1005.0",
     "eslint": "^8.0.1",
     "eslint-config-standard-with-typescript": "^39.1.0",
     "eslint-plugin-import": "^2.25.2",
@@ -36,7 +36,8 @@
     "typescript": "*"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.96.2",
+    "@aws-cdk/aws-amplify-alpha": "^2.180.0-alpha.0",
+    "aws-cdk-lib": "^2.183.0",
     "aws-sdk": "^2.1602.0",
     "constructs": "^10.0.0",
     "dotenv": "^16.4.5",

@@ -6,6 +6,7 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -14,6 +15,13 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+};
+
+export type ArticleElement = ImageElement | PaceTableElement | TextElement;
+
+export type ArticleElements = {
+  __typename?: 'ArticleElements';
+  items?: Maybe<Array<Maybe<ArticleElement>>>;
 };
 
 export type CreatedPlan = {
@@ -59,6 +67,11 @@ export type Geometry = {
   __typename?: 'Geometry';
   coordinates?: Maybe<Array<Maybe<Array<Maybe<Scalars['Float']['output']>>>>>;
   type?: Maybe<Scalars['String']['output']>;
+};
+
+export type ImageElement = {
+  __typename?: 'ImageElement';
+  image?: Maybe<Scalars['String']['output']>;
 };
 
 export type MileData = {
@@ -117,9 +130,21 @@ export type MutationUpdatePlanByIdArgs = {
   planInput: PlanInput;
 };
 
+export type PaceTable = {
+  __typename?: 'PaceTable';
+  Columns?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  Miles?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
+};
+
+export type PaceTableElement = {
+  __typename?: 'PaceTableElement';
+  paceTable?: Maybe<PaceTable>;
+};
+
 export type Plan = {
   __typename?: 'Plan';
   articleContent?: Maybe<Scalars['String']['output']>;
+  articleElements?: Maybe<ArticleElements>;
   author?: Maybe<Scalars['String']['output']>;
   bucketKey?: Maybe<Scalars['String']['output']>;
   coverImage?: Maybe<Scalars['String']['output']>;
@@ -207,6 +232,11 @@ export type S3MileData = {
   stopTime: Scalars['Int']['output'];
 };
 
+export type TextElement = {
+  __typename?: 'TextElement';
+  text?: Maybe<Scalars['String']['output']>;
+};
+
 export type UpdatedArticle = {
   __typename?: 'UpdatedArticle';
   success: Scalars['Boolean']['output'];
@@ -292,10 +322,16 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
+/** Mapping of union types */
+export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
+  ArticleElement: ( ImageElement ) | ( PaceTableElement ) | ( TextElement );
+};
 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  ArticleElement: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ArticleElement']>;
+  ArticleElements: ResolverTypeWrapper<Omit<ArticleElements, 'items'> & { items?: Maybe<Array<Maybe<ResolversTypes['ArticleElement']>>> }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreatedPlan: ResolverTypeWrapper<CreatedPlan>;
   DeletePlan: ResolverTypeWrapper<DeletePlan>;
@@ -305,10 +341,13 @@ export type ResolversTypes = {
   GeoProperties: ResolverTypeWrapper<GeoProperties>;
   Geometry: ResolverTypeWrapper<Geometry>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
+  ImageElement: ResolverTypeWrapper<ImageElement>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   MileData: ResolverTypeWrapper<MileData>;
   MileDataInput: MileDataInput;
   Mutation: ResolverTypeWrapper<{}>;
+  PaceTable: ResolverTypeWrapper<PaceTable>;
+  PaceTableElement: ResolverTypeWrapper<PaceTableElement>;
   Plan: ResolverTypeWrapper<Plan>;
   PlanInput: PlanInput;
   PointMetadata: ResolverTypeWrapper<PointMetadata>;
@@ -316,6 +355,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   S3MileData: ResolverTypeWrapper<S3MileData>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  TextElement: ResolverTypeWrapper<TextElement>;
   UpdatedArticle: ResolverTypeWrapper<UpdatedArticle>;
   UpdatedPlan: ResolverTypeWrapper<UpdatedPlan>;
   User: ResolverTypeWrapper<User>;
@@ -323,6 +363,8 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  ArticleElement: ResolversUnionTypes<ResolversParentTypes>['ArticleElement'];
+  ArticleElements: Omit<ArticleElements, 'items'> & { items?: Maybe<Array<Maybe<ResolversParentTypes['ArticleElement']>>> };
   Boolean: Scalars['Boolean']['output'];
   CreatedPlan: CreatedPlan;
   DeletePlan: DeletePlan;
@@ -332,10 +374,13 @@ export type ResolversParentTypes = {
   GeoProperties: GeoProperties;
   Geometry: Geometry;
   ID: Scalars['ID']['output'];
+  ImageElement: ImageElement;
   Int: Scalars['Int']['output'];
   MileData: MileData;
   MileDataInput: MileDataInput;
   Mutation: {};
+  PaceTable: PaceTable;
+  PaceTableElement: PaceTableElement;
   Plan: Plan;
   PlanInput: PlanInput;
   PointMetadata: PointMetadata;
@@ -343,6 +388,7 @@ export type ResolversParentTypes = {
   Query: {};
   S3MileData: S3MileData;
   String: Scalars['String']['output'];
+  TextElement: TextElement;
   UpdatedArticle: UpdatedArticle;
   UpdatedPlan: UpdatedPlan;
   User: User;
@@ -357,6 +403,15 @@ export type Aws_Cognito_User_PoolsDirectiveResolver<Result, Parent, ContextType 
 export type Aws_IamDirectiveArgs = { };
 
 export type Aws_IamDirectiveResolver<Result, Parent, ContextType = any, Args = Aws_IamDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type ArticleElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['ArticleElement'] = ResolversParentTypes['ArticleElement']> = {
+  __resolveType: TypeResolveFn<'ImageElement' | 'PaceTableElement' | 'TextElement', ParentType, ContextType>;
+};
+
+export type ArticleElementsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ArticleElements'] = ResolversParentTypes['ArticleElements']> = {
+  items?: Resolver<Maybe<Array<Maybe<ResolversTypes['ArticleElement']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type CreatedPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatedPlan'] = ResolversParentTypes['CreatedPlan']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -403,6 +458,11 @@ export type GeometryResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ImageElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['ImageElement'] = ResolversParentTypes['ImageElement']> = {
+  image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MileDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['MileData'] = ResolversParentTypes['MileData']> = {
   elevationGain?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   elevationLoss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -421,8 +481,20 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
+export type PaceTableResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaceTable'] = ResolversParentTypes['PaceTable']> = {
+  Columns?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  Miles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Int']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PaceTableElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaceTableElement'] = ResolversParentTypes['PaceTableElement']> = {
+  paceTable?: Resolver<Maybe<ResolversTypes['PaceTable']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
   articleContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  articleElements?: Resolver<Maybe<ResolversTypes['ArticleElements']>, ParentType, ContextType>;
   author?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bucketKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   coverImage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -475,6 +547,11 @@ export type S3MileDataResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type TextElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['TextElement'] = ResolversParentTypes['TextElement']> = {
+  text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UpdatedArticleResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdatedArticle'] = ResolversParentTypes['UpdatedArticle']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -494,19 +571,25 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type Resolvers<ContextType = any> = {
+  ArticleElement?: ArticleElementResolvers<ContextType>;
+  ArticleElements?: ArticleElementsResolvers<ContextType>;
   CreatedPlan?: CreatedPlanResolvers<ContextType>;
   DeletePlan?: DeletePlanResolvers<ContextType>;
   Feature?: FeatureResolvers<ContextType>;
   FeatureCollection?: FeatureCollectionResolvers<ContextType>;
   GeoProperties?: GeoPropertiesResolvers<ContextType>;
   Geometry?: GeometryResolvers<ContextType>;
+  ImageElement?: ImageElementResolvers<ContextType>;
   MileData?: MileDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  PaceTable?: PaceTableResolvers<ContextType>;
+  PaceTableElement?: PaceTableElementResolvers<ContextType>;
   Plan?: PlanResolvers<ContextType>;
   PointMetadata?: PointMetadataResolvers<ContextType>;
   PublishedPlan?: PublishedPlanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   S3MileData?: S3MileDataResolvers<ContextType>;
+  TextElement?: TextElementResolvers<ContextType>;
   UpdatedArticle?: UpdatedArticleResolvers<ContextType>;
   UpdatedPlan?: UpdatedPlanResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

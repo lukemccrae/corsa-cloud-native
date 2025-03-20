@@ -59,9 +59,15 @@ export class CorsaBackendStack extends cdk.Stack {
       },
     });
 
+
+    const preSignUpLambdaRole = new iam.Role(this, 'PreSignUpLambdaExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
     const preSignUpLambda = new lambda.Function(this, 'PreSignUpLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
+      role: preSignUpLambdaRole,
       code: lambda.Code.fromInline(`
         exports.handler = (event, context, callback) => {
           event.response.autoConfirmUser = true;
@@ -71,8 +77,20 @@ export class CorsaBackendStack extends cdk.Stack {
       `)
     });
 
-    // userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUpLambda);
+    preSignUpLambdaRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['lambda:InvokeFunction'],
+        resources: ['*'], // Change this to restrict if needed
+      })
+    );
 
+    preSignUpLambda.addPermission('CognitoInvokePermission', {
+      principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
+      action: 'lambda:InvokeFunction',
+      sourceArn: `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPool.userPoolId}`,
+    });
+    
     const domain = userPool.addDomain('Domain', {
       cognitoDomain: {
         domainPrefix: 'corsa'
@@ -348,6 +366,7 @@ export class CorsaBackendStack extends cdk.Stack {
     presignUrlLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     createPlanFromGeoJsonLambdaRole.attachInlinePolicy(cloudwatchPolicy);
     openAIassistantLambdaRole.attachInlinePolicy(cloudwatchPolicy);
+    preSignUpLambdaRole.attachInlinePolicy(cloudwatchPolicy);
 
     geoJsonBucket.grantRead(queryLambdaRole);
 

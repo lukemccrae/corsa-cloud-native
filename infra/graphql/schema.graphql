@@ -109,7 +109,32 @@ type Plan @aws_cognito_user_pools @aws_iam {
   profilePhoto: String
   author: String
   publishDate: String
+  articleElements: ArticleElements
 }
+
+type ArticleElements @aws_cognito_user_pools @aws_iam {
+  items: [ArticleElement]
+}
+
+union ArticleElement = TextElement | ImageElement | PaceTableElement
+
+type TextElement {
+  text: String
+}
+
+type ImageElement {
+  image: String
+}
+
+type PaceTableElement {
+  paceTable: PaceTable
+}
+
+type PaceTable {
+  Columns: [String]
+  Miles: [Int]
+}
+
 
 type S3MileData @aws_cognito_user_pools @aws_iam {
   elevationGain: Float!
