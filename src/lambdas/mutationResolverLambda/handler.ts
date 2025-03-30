@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config({path: "../.env"});
 
 export const handler = async (event: any, context: any): Promise<any> => {
+  console.log("handler")
   const isLocal = (process.env.LOCAL === 'true') || false;
   const currentEvent = isLocal ? event.body : event;
 
@@ -19,6 +20,8 @@ export const handler = async (event: any, context: any): Promise<any> => {
         case 'deletePlanById':
           return await deletePlanById(currentEvent.arguments);
         case 'updateArticleByPlanId':
+          console.log("switch")
+          console.log(currentEvent, '<< current event')
           return await updateArticleByPlanId(currentEvent.arguments);
         case 'publishPlan':
           return await publishPlan(currentEvent.arguments);

@@ -1,21 +1,16 @@
-import { makeMileData } from '../helpers/mileData.helper';
-import S3 = require('aws-sdk/clients/s3');
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import {
-  type CreatedPlan,
   UpdatedPlan,
   UpdatedArticle,
-  PublishedPlan
+  PublishedPlan,
+  ArticleElement,
+  PaceTable,
+  Text
 } from '../types';
 import {
-  AttributeValue,
   DynamoDBClient,
-  PutItemCommand,
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
-import { makeProfilePoints } from '../helpers/vertProfile.helper';
-import { FeatureCollectionBAD } from '../../types';
-import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
+import DynamoDB = require('aws-sdk/clients/dynamodb');
 
 interface UpdatePlanProps {
   sortKey: string;
@@ -23,13 +18,13 @@ interface UpdatePlanProps {
   startTime: number;
   planName: string;
   paces: number[];
-  articleContent: string;
+  articleContent: any;
 }
 
 interface UpdateArticleProps {
   slug: string;
   userId: string;
-  articleContent: string;
+  articleElements: string;
 }
 
 interface PublishPlanProps {
@@ -86,28 +81,73 @@ export const publishPlan = async (
 export const updateArticleByPlanId = async (
   articleInputArgs: UpdateArticleProps
 ): Promise<UpdatedArticle> => {
-  const { userId, slug, articleContent } = articleInputArgs;
+  const { userId, slug, articleElements } = articleInputArgs;
+
+  const parsedElements = JSON.parse(articleElements)
+
+
+  const isPaceTable = (e: ArticleElement): e is { paceTable: PaceTable, editing: boolean, id: string } =>
+    "paceTable" in e;
+
+  const isText = (e: ArticleElement): e is { text: Text, editing: boolean, id: string } => "text" in e;
+
+  const returnProperElement = (element: ArticleElement) => {
+    if (isPaceTable(element)) {
+      if (!element.paceTable || !Array.isArray(element.paceTable.columns) || !Array.isArray(element.paceTable.miles)) {
+        return null; // Return null if paceTable or its properties are invalid
+      }
+      return {
+        M: {
+          PaceTable: {
+            M: {
+              Columns: {
+                L: element.paceTable.columns.map((col: string) => ({ S: col })),
+              },
+              Miles: {
+                L: element.paceTable.miles.map((mile: number) => ({ N: mile.toString() })),
+              },
+            },
+          },
+          Type: { S: "PACE_TABLE" },
+          Id: {S: element.id}
+        },
+      };
+    } else if (isText(element)) {
+      return {
+        M: {
+          Content: { S: `${element.text.content}` },
+          Type: { S: "TEXT" },
+          Id: {S: element.id}
+        }
+      }
+    }
+    return null; // Default case if no match
+  };
+
+  const elementsToInsert = parsedElements.map((e: any) => {
+    return returnProperElement(e);
+  }).filter((item: any): item is DynamoDB.DocumentClient.AttributeValue => item !== null);
 
   const command = new UpdateItemCommand({
-    TableName: process.env.DYNAMODB_TABLE_NAME,
+    // TableName: process.env.DYNAMODB_TABLE_NAME,
+    TableName: 'CorsaBackendStack-TrackMetadataTable38567A80-1ATS8LGKJ2X2V',
     Key: {
       UserId: { S: userId },
       Slug: { S: slug }
     },
     // This is analogous to a SQL statement
-    UpdateExpression: 'SET #ArticleContent = :articleContent',
+    UpdateExpression: 'SET #ArticleElements = :articleElements',
     // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
-      '#ArticleContent': 'ArticleContent'
+      '#ArticleElements': 'ArticleElements'
     },
     // This passes the values to the write operation
     ExpressionAttributeValues: {
-      ':articleContent': { S: articleContent }
+      ':articleElements': { L: elementsToInsert }
     }
   });
 
   try {
-    // console.log(command, '<< command')
     const response = await client.send(command);
     if (response.$metadata.httpStatusCode === 200)
       return {

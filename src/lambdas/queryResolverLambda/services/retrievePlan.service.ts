@@ -33,22 +33,27 @@ type dbMileData = {
   };
 };
 
-type ArticleElements = {
-  M: {
-    Image: { S: string };
-    Text: { S: string };
-    PaceTable: {
-      M: {
-        Columns: {
-          L: { S: string }[]; // Array of objects where each object has a string property 'S'
-        };
-        Miles: {
-          L: { N: string }[]; // Array of objects where each object has a string property 'N'
-        };
-      };
-    };
+type TextElement = {
+  __typename: "TextElement";
+  text: {
+    content: string
   };
 };
+
+type ImageElement = {
+  __typename: "ImageElement";
+  url: string;
+};
+
+type PaceTableElement = {
+  __typename: "PaceTableElement";
+  paceTable: {
+    columns: string[];
+    miles: number[];
+  };
+};
+
+type ArticleElement = TextElement | ImageElement | PaceTableElement;
 
 type DbPlan = {
   UserId: {
@@ -60,6 +65,9 @@ type DbPlan = {
   BucketKey: {
     S: String;
   };
+  Id: {
+    S: String;
+  }
   StartTime: {
     S: String;
   };
@@ -97,7 +105,7 @@ type DbPlan = {
     S: String;
   };
   ArticleElements: {
-    L: ArticleElements
+    L: ArticleElement[]
   }
 };
 
@@ -150,12 +158,12 @@ export const getPlanById = async (args: any): Promise<any> => {
 
   try {
     const planResult = await client.send(queryCommand);
-    console.log(planResult, '<< pr')
     if (planResult.Items === undefined) return [];
 
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
     const result = parsePlans(plan)[0];
+    console.log(JSON.stringify(result), '<< res')
 
     return result;
   } catch (e) {
@@ -230,7 +238,7 @@ const calcLastMileGap = (
 
 // big scary
 const parsePlans = (plans: DbPlan[]) => {
-  console.log(JSON.stringify(plans))
+  console.log(JSON.stringify(plans[0].ArticleElements, null, 2))
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;
@@ -280,24 +288,38 @@ const parsePlans = (plans: DbPlan[]) => {
     profilePhoto: plan.ProfilePhoto.S,
     author: plan.Author.S,
     publishDate: plan.PublishDate.S,
-    articleElements: (plan.ArticleElements.L as unknown as ArticleElements[]).flatMap((element) => {
-      const result: any[] = [];
-    
-      // Text object
-      result.push({ text: element.M.Text.S });
-    
-      // Image object
-      result.push({ image: element.M.Image.S });
-    
-      // PaceTable object
-      result.push({
-        paceTable: {
-          columns: element.M.PaceTable.M.Columns.L.map((col) => col.S),
-          miles: element.M.PaceTable.M.Miles.L.map((mile) => mile.N)
-        },
-      });
-    
-      return result;
+    articleElements: plan.ArticleElements?.L?.map((element: any) => {
+      const type = element.M.Type.S; // Identify type  
+      if (type === "TEXT") {
+        return {
+          __typename: "TextElement",
+          id: element.M.Id.S,
+          text: {
+            content: element.M.Content?.S || "",
+          }
+        } as TextElement;
+      }
+  
+      if (type === "IMAGE") {
+        return {
+          id: element.M.Id.S,
+          __typename: "ImageElement",
+          url: element.M.Url?.S || "",
+        } as ImageElement;
+      }
+  
+      if (type === "PACE_TABLE") {
+        return {
+          id: element.M.Id.S,
+          __typename: "PaceTableElement",
+          paceTable: {
+            columns: element.M.PaceTable.M.Columns.L.map((col: any) => col.S),
+            miles: element.M.PaceTable.M.Miles.L.map((mile: any) => Number(mile.N)), // Convert to number
+
+          },
+        } as PaceTableElement;
+      }
+      throw new Error(`Unknown article element type: ${type}`);
     })
   }));
 };

@@ -11,6 +11,7 @@ import {
 import { makeProfilePoints } from '../helpers/vertProfile.helper';
 import { FeatureCollectionBAD } from '../../types';
 import { makeMileIndices } from '../helpers/temp.mileIndicesHelper';
+import { generateRandomID } from '../helpers/randomId.helper'
 import { gpxToGeoJson } from './gpxGeoJson.service';
 import { validateEnvVar } from '../helpers/environmentVarValidate.helper';
 import { shortenIteratively } from '../helpers/removePoints.helper';
@@ -200,7 +201,50 @@ const uploadPlan = async (
         },
         PublishDate: {
           S: String(Date.now())
-        }
+        },
+        ArticleElements: {
+          L: [
+            {
+              M: {
+                Type: { S: "TEXT" },
+                Id: { S: generateRandomID(4) },
+                Text: {
+                  M: {
+                    Content: { S: "This is a sample text element." },
+                  }
+                },
+              },
+            },
+            {
+              M: {
+                Type: { S: "PACE_TABLE" },
+                Id: { S: generateRandomID(4) },
+                PaceTable: {
+                  M: {
+                    Columns: {
+                      L: [
+                        { S: "Mile" },
+                        { S: "Pace" },
+                        { S: "Profile" },
+                        { S: "Avg." },
+                        { S: "Gain" },
+                        { S: "Loss" },
+                        { S: "Gap" },
+                        { S: "Elapsed" },
+                      ],
+                    },
+                    Miles: {
+                      L: [
+                        { N: "0" },
+                        { N: "5" },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
       }
     });
 

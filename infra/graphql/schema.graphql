@@ -37,7 +37,7 @@ type Mutation {
   updateArticleByPlanId(
     slug: ID!
     userId: String!
-    articleContent: String!
+    articleElements: String!
   ): UpdatedArticle! @aws_cognito_user_pools(cognito_groups: ["users"])
   publishPlan(slug: ID!, userId: String!, published: Boolean!): PublishedPlan!
     @aws_cognito_user_pools(cognito_groups: ["users"])
@@ -109,32 +109,35 @@ type Plan @aws_cognito_user_pools @aws_iam {
   profilePhoto: String
   author: String
   publishDate: String
-  articleElements: ArticleElements
-}
-
-type ArticleElements @aws_cognito_user_pools @aws_iam {
-  items: [ArticleElement]
+  articleElements: [ArticleElement]
 }
 
 union ArticleElement = TextElement | ImageElement | PaceTableElement
 
-type TextElement {
-  text: String
+type Text @aws_cognito_user_pools @aws_iam {
+  content: String
+  editing: Boolean
 }
 
-type ImageElement {
-  image: String
+type TextElement @aws_cognito_user_pools @aws_iam {
+  text: Text
+  id: ID!
 }
 
-type PaceTableElement {
+type ImageElement @aws_cognito_user_pools @aws_iam {
+  url: String
+  id: ID!
+}
+
+type PaceTableElement @aws_cognito_user_pools @aws_iam {
   paceTable: PaceTable
+  id: ID!
 }
 
-type PaceTable {
-  Columns: [String]
-  Miles: [Int]
+type PaceTable @aws_cognito_user_pools @aws_iam {
+  columns: [String]
+  miles: [Int]
 }
-
 
 type S3MileData @aws_cognito_user_pools @aws_iam {
   elevationGain: Float!
