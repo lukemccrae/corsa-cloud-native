@@ -202,6 +202,9 @@ const uploadPlan = async (
         PublishDate: {
           S: String(Date.now())
         },
+        ActivityType: {
+          S: 'RUN'
+        },
         ArticleElements: {
           L: [
             {

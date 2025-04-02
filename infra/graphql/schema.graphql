@@ -110,6 +110,7 @@ type Plan @aws_cognito_user_pools @aws_iam {
   author: String
   publishDate: String
   articleElements: [ArticleElement]
+  activityType: String
 }
 
 union ArticleElement = TextElement | ImageElement | PaceTableElement

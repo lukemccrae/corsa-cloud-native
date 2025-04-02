@@ -140,6 +140,7 @@ export type PaceTableElement = {
 
 export type Plan = {
   __typename?: 'Plan';
+  activityType?: Maybe<Scalars['String']['output']>;
   articleContent?: Maybe<Scalars['String']['output']>;
   articleElements?: Maybe<Array<Maybe<ArticleElement>>>;
   author?: Maybe<Scalars['String']['output']>;
@@ -494,6 +495,7 @@ export type PaceTableElementResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type PlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plan'] = ResolversParentTypes['Plan']> = {
+  activityType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   articleContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   articleElements?: Resolver<Maybe<Array<Maybe<ResolversTypes['ArticleElement']>>>, ParentType, ContextType>;
   author?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

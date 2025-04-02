@@ -106,6 +106,9 @@ type DbPlan = {
   };
   ArticleElements: {
     L: ArticleElement[]
+  };
+  ActivityType: {
+    S: String;
   }
 };
 
@@ -163,7 +166,6 @@ export const getPlanById = async (args: any): Promise<any> => {
     //not sure why this is necessary
     const plan = JSON.parse(JSON.stringify(planResult.Items));
     const result = parsePlans(plan)[0];
-    console.log(JSON.stringify(result), '<< res')
 
     return result;
   } catch (e) {
@@ -287,6 +289,7 @@ const parsePlans = (plans: DbPlan[]) => {
     coverImage: plan.CoverImage.S,
     profilePhoto: plan.ProfilePhoto.S,
     author: plan.Author.S,
+    activityType: plan.ActivityType.S,
     publishDate: plan.PublishDate.S,
     articleElements: plan.ArticleElements?.L?.map((element: any) => {
       const type = element.M.Type.S; // Identify type  
