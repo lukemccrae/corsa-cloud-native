@@ -20,8 +20,6 @@ export const handler = async (event: any, context: any): Promise<any> => {
         case 'deletePlanById':
           return await deletePlanById(currentEvent.arguments);
         case 'updateArticleByPlanId':
-          console.log("switch")
-          console.log(currentEvent, '<< current event')
           return await updateArticleByPlanId(currentEvent.arguments);
         case 'publishPlan':
           return await publishPlan(currentEvent.arguments);

@@ -109,7 +109,10 @@ type DbPlan = {
   };
   ActivityType: {
     S: String;
-  }
+  };
+  SubHeading: {
+    S: String;
+  };
 };
 
 export const getPublishedPlans = async (): Promise<any> => {
@@ -240,91 +243,97 @@ const calcLastMileGap = (
 
 // big scary
 const parsePlans = (plans: DbPlan[]) => {
-  console.log(JSON.stringify(plans[0].ArticleElements, null, 2))
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
   let duration = 0;
-  return plans.map((plan: DbPlan) => ({
-    slug: plan.Slug.S,
-    bucketKey: plan.BucketKey.S,
-    articleContent: plan.ArticleContent.S,
-    userId: plan.UserId.S,
-    name: plan.Name.S,
-    startTime: plan.StartTime.S,
-    timezone: plan.TimeZone?.S,
-    mileData: plan.MileData.L.map((data, i) => {
-      duration += parseFloat(plan.Paces.L[i].N.toString());
-
-      let finalMile: boolean = i === plan.MileData.L.length - 1;
-      let loss = parseFloat(data.M.elevationLoss.N.toString());
-      let gain = parseFloat(data.M.elevationGain.N.toString());
-      let pace = parseFloat(plan.Paces.L[i].N.toString());
-
-      cumulativeLoss += loss;
-      cumulativeGain += gain;
-
-      return {
-        elevationGain: Math.round(
-          parseFloat(data.M.elevationGain.N.toString())
-        ),
-        elevationLoss: Math.round(
-          parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
-        ),
-        mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
-        pace: !finalMile
-          ? pace
-          : percentageOfPace(Number(plan.LastMileDistance.N), pace), // Ns are string in the DB...
-        stopTime: parseFloat(data.M.stopTime.N),
-        gap: !finalMile
-          ? calcGap(pace, gain, loss)
-          : calcLastMileGap(pace, gain, loss, Number(plan.LastMileDistance.N))
-      };
-    }),
-    lastMileDistance: plan.LastMileDistance.N,
-    distanceInMiles: plan.MileData.L.length - 1,
-    gainInMeters: Math.round(cumulativeGain),
-    lossInMeters: Math.round(cumulativeLoss),
-    durationInSeconds: Math.round(duration),
-    published: plan.Published.BOOL,
-    coverImage: plan.CoverImage.S,
-    profilePhoto: plan.ProfilePhoto.S,
-    author: plan.Author.S,
-    activityType: plan.ActivityType.S,
-    publishDate: plan.PublishDate.S,
-    articleElements: plan.ArticleElements?.L?.map((element: any) => {
-      const type = element.M.Type.S; // Identify type  
-      if (type === "TEXT") {
-        return {
-          __typename: "TextElement",
-          id: element.M.Id.S,
-          text: {
-            content: element.M.Content?.S || "",
-          }
-        } as TextElement;
-      }
+  try {
+    return plans.map((plan: DbPlan) => ({
+      slug: plan.Slug.S,
+      bucketKey: plan.BucketKey.S,
+      articleContent: plan.ArticleContent.S,
+      userId: plan.UserId.S,
+      name: plan.Name.S,
+      startTime: plan.StartTime.S,
+      timezone: plan.TimeZone?.S,
+      mileData: plan.MileData.L.map((data, i) => {
+        duration += parseFloat(plan.Paces.L[i].N.toString());
   
-      if (type === "IMAGE") {
-        return {
-          id: element.M.Id.S,
-          __typename: "ImageElement",
-          url: element.M.Url?.S || "",
-        } as ImageElement;
-      }
+        let finalMile: boolean = i === plan.MileData.L.length - 1;
+        let loss = parseFloat(data.M.elevationLoss.N.toString());
+        let gain = parseFloat(data.M.elevationGain.N.toString());
+        let pace = parseFloat(plan.Paces.L[i].N.toString());
   
-      if (type === "PACE_TABLE") {
+        cumulativeLoss += loss;
+        cumulativeGain += gain;
+  
         return {
-          id: element.M.Id.S,
-          __typename: "PaceTableElement",
-          paceTable: {
-            columns: element.M.PaceTable.M.Columns.L.map((col: any) => col.S),
-            miles: element.M.PaceTable.M.Miles.L.map((mile: any) => Number(mile.N)), // Convert to number
-
-          },
-        } as PaceTableElement;
-      }
-      throw new Error(`Unknown article element type: ${type}`);
-    })
-  }));
+          elevationGain: Math.round(
+            parseFloat(data.M.elevationGain.N.toString())
+          ),
+          elevationLoss: Math.round(
+            parseFloat(data.M.elevationLoss.N.toString()) // THIS IS SO GROSS
+          ),
+          mileVertProfile: data.M.gainProfile.L.map((n) => parseInt(n.N)),
+          pace: !finalMile
+            ? pace
+            : percentageOfPace(Number(plan.LastMileDistance.N), pace), // Ns are string in the DB...
+          stopTime: parseFloat(data.M.stopTime.N),
+          gap: !finalMile
+            ? calcGap(pace, gain, loss)
+            : calcLastMileGap(pace, gain, loss, Number(plan.LastMileDistance.N))
+        };
+      }),
+      lastMileDistance: plan.LastMileDistance.N,
+      distanceInMiles: plan.MileData.L.length - 1,
+      gainInMeters: Math.round(cumulativeGain),
+      lossInMeters: Math.round(cumulativeLoss),
+      durationInSeconds: Math.round(duration),
+      published: plan.Published.BOOL,
+      coverImage: plan.CoverImage.S,
+      profilePhoto: plan.ProfilePhoto.S,
+      author: plan.Author.S,
+      activityType: plan.ActivityType.S,
+      publishDate: plan.PublishDate.S,
+      subHeading: plan.SubHeading.S,
+      articleElements: plan.ArticleElements?.L?.map((element: any) => {
+        const type = element.M.Type.S; // Identify type  
+        if (type === "TEXT") {
+          return {
+            __typename: "TextElement",
+            id: element.M.Id.S,
+            text: {
+              content: element.M.Content?.S || "",
+            }
+          } as TextElement;
+        }
+    
+        if (type === "IMAGE") {
+          return {
+            id: element.M.Id.S,
+            __typename: "ImageElement",
+            url: element.M.Url?.S || "",
+          } as ImageElement;
+        }
+    
+        if (type === "PACE_TABLE") {
+          return {
+            id: element.M.Id.S,
+            __typename: "PaceTableElement",
+            paceTable: {
+              columns: element.M.PaceTable.M.Columns.L.map((col: any) => col.S),
+              miles: element.M.PaceTable.M.Miles.L.map((mile: any) => Number(mile.N)), // Convert to number
+  
+            },
+          } as PaceTableElement;
+        }
+        throw new Error(`Unknown article element type: ${type}`);
+      })
+    }));
+  } catch (e) {
+    console.log(JSON.stringify(plans), '<< bad plan');
+    console.log(e, '<< error parsing plans');
+    return [];
+  }
 };
 
 // this method is used by handler for requests that need to retrieve the userId with username
@@ -360,6 +369,7 @@ export const fetchUsersWithUserId = async (userId: string) => {
     // Execute the BatchGetItem operation
     const result = await client.send(queryCommand);
     if (result.Items === undefined) return [];
+    if (result.Items.length === 0) return [];
 
     //not sure why this is necessary
     const plans = JSON.parse(JSON.stringify(result.Items));

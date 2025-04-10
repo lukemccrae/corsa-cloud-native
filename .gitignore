@@ -23,3 +23,5 @@ cdk.out
 
 # ignore amplify generated file
 cdk.context.json
+
+lambda.zip

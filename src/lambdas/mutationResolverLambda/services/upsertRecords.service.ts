@@ -25,6 +25,7 @@ interface UpdateArticleProps {
   slug: string;
   userId: string;
   articleElements: string;
+  planName: string;
 }
 
 interface PublishPlanProps {
@@ -81,7 +82,7 @@ export const publishPlan = async (
 export const updateArticleByPlanId = async (
   articleInputArgs: UpdateArticleProps
 ): Promise<UpdatedArticle> => {
-  const { userId, slug, articleElements } = articleInputArgs;
+  const { userId, slug, articleElements, planName } = articleInputArgs;
 
   const parsedElements = JSON.parse(articleElements)
 
@@ -109,7 +110,7 @@ export const updateArticleByPlanId = async (
             },
           },
           Type: { S: "PACE_TABLE" },
-          Id: {S: element.id}
+          Id: { S: element.id }
         },
       };
     } else if (isText(element)) {
@@ -117,7 +118,7 @@ export const updateArticleByPlanId = async (
         M: {
           Content: { S: `${element.text.content}` },
           Type: { S: "TEXT" },
-          Id: {S: element.id}
+          Id: { S: element.id }
         }
       }
     }
@@ -136,14 +137,16 @@ export const updateArticleByPlanId = async (
       Slug: { S: slug }
     },
     // This is analogous to a SQL statement
-    UpdateExpression: 'SET #ArticleElements = :articleElements',
+    UpdateExpression: 'SET #ArticleElements = :articleElements, #Name = :name',
     // This ties the passed values to the DB variables
     ExpressionAttributeNames: {
-      '#ArticleElements': 'ArticleElements'
+      '#ArticleElements': 'ArticleElements',
+      '#Name': 'Name'
     },
     // This passes the values to the write operation
     ExpressionAttributeValues: {
-      ':articleElements': { L: elementsToInsert }
+      ':articleElements': { L: elementsToInsert },
+      ':name': { S: planName }
     }
   });
 

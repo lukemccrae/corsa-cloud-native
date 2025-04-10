@@ -248,6 +248,9 @@ const uploadPlan = async (
             },
           ],
         },
+        SubHeading: {
+          S: 'Sub Heading'
+        }
       }
     });
 

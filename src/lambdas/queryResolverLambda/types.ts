@@ -117,6 +117,7 @@ export type MutationPublishPlanArgs = {
 
 export type MutationUpdateArticleByPlanIdArgs = {
   articleElements: Scalars['String']['input'];
+  planName: Scalars['String']['input'];
   slug: Scalars['ID']['input'];
   userId: Scalars['String']['input'];
 };
@@ -159,6 +160,7 @@ export type Plan = {
   published?: Maybe<Scalars['Boolean']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   startTime?: Maybe<Scalars['String']['output']>;
+  subHeading?: Maybe<Scalars['String']['output']>;
   timezone?: Maybe<Scalars['String']['output']>;
   userId?: Maybe<Scalars['String']['output']>;
 };
@@ -478,7 +480,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPlanFromGeoJson?: Resolver<ResolversTypes['CreatedPlan'], ParentType, ContextType, RequireFields<MutationCreatePlanFromGeoJsonArgs, 'gpxId' | 'userId' | 'username'>>;
   deletePlanById?: Resolver<ResolversTypes['DeletePlan'], ParentType, ContextType, RequireFields<MutationDeletePlanByIdArgs, 'bucketKey' | 'slug' | 'userId'>>;
   publishPlan?: Resolver<ResolversTypes['PublishedPlan'], ParentType, ContextType, RequireFields<MutationPublishPlanArgs, 'published' | 'slug' | 'userId'>>;
-  updateArticleByPlanId?: Resolver<ResolversTypes['UpdatedArticle'], ParentType, ContextType, RequireFields<MutationUpdateArticleByPlanIdArgs, 'articleElements' | 'slug' | 'userId'>>;
+  updateArticleByPlanId?: Resolver<ResolversTypes['UpdatedArticle'], ParentType, ContextType, RequireFields<MutationUpdateArticleByPlanIdArgs, 'articleElements' | 'planName' | 'slug' | 'userId'>>;
   updatePlanById?: Resolver<ResolversTypes['UpdatedPlan'], ParentType, ContextType, RequireFields<MutationUpdatePlanByIdArgs, 'planInput'>>;
 };
 
@@ -514,6 +516,7 @@ export type PlanResolvers<ContextType = any, ParentType extends ResolversParentT
   published?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subHeading?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   userId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
